@@ -28,20 +28,23 @@ module Controller where
 
 
     updateWorld :: World -> World
-    updateWorld w = updatePlane w
+    updateWorld w = updatePlane $ planeOnScreen w
 
 
     updatePlane :: World -> World
     updatePlane w@(World(Player {playerlocation = (x,y), movement = dir}))
-        | dir == RightMovement = World(Player {playerlocation = (x + 7 ,y), movement = RightMovement})
-        | dir == LeftMovement = World(Player {playerlocation = (x - 7,y), movement = LeftMovement})
-        | dir == DownMovement = World(Player {playerlocation = (x,y - 7), movement = DownMovement})
-        | dir == UpMovement = World(Player {playerlocation = (x,y + 7), movement = UpMovement})
+        | dir == RightMovement = World(Player {playerlocation = (x + 10 ,y), movement = RightMovement})
+        | dir == LeftMovement = World(Player {playerlocation = (x - 10,y), movement = LeftMovement})
+        | dir == DownMovement = World(Player {playerlocation = (x,y - 10), movement = DownMovement})
+        | dir == UpMovement = World(Player {playerlocation = (x,y + 10), movement = UpMovement})
         | dir == NoMovement = w
 
     planeOnScreen :: World -> World
-    planeOnScreen w@(World p@(Player {playerlocation = (x,y)}) ) 
-        | x < 0 = World (Player {playerlocation = (0,y)})
-        | x > 400 = World (Player {playerlocation = (400,y)}) 
+    planeOnScreen w@(World p@(Player {playerlocation = (x,y)}))
+        | x <= (-194) = w{ player = p {playerlocation = (-194,y)}}
+        | x >= (194) = w{ player = p {playerlocation = (194,y)}}
+        | y <= (-190) = w{ player = p {playerlocation = (x,-190)}}
+        | y >= (170) = w{ player = p {playerlocation = (x,170)}}
+        | otherwise = w 
 
 
