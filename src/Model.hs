@@ -19,11 +19,14 @@ module Model where
                 }
 
     data Player = Player {
-                playerlocation :: (Float,Float)
+                playerlocation  :: (Float,Float),
+                movement        :: Movement
                 }
+    
+    data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)
                                
     initial_world :: World
-    initial_world = World (Player (200,200))
+    initial_world = World (Player (0,-180) NoMovement)
                 
 
 
