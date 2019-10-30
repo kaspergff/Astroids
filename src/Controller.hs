@@ -82,11 +82,11 @@ module Controller where
 
     timeToSpawnAsteroid :: World -> World
     timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
-        | time < 1 = spawnAsteroid w{ asteroidTimer = getRandomNumber (1, 40)}
+        | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
         | otherwise = w {asteroidTimer = time - 1}
 
-    getRandomNumber :: (Int, Int) -> Int
-    getRandomNumber (a, b) = randomRIO (a,b)
+    --getRandomNumber :: (Int, Int) -> Int
+    --getRandomNumber (a, b) = randomRIO (a,b)
 
 
 
