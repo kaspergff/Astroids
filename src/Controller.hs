@@ -11,7 +11,9 @@ module Controller where
     
     -- | Handle one iteration of the game
     step :: Float -> GameState -> IO GameState
-    step secs gstate = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
+    step secs gstate  
+        | (isPaused $ world gstate) == False = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
+        | otherwise = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
     
     -- | Handle user input
     input :: Event -> GameState -> IO GameState
@@ -49,5 +51,10 @@ module Controller where
         | y <= (-190) = w{ player = p {playerlocation = (x,-190)}}
         | y >= (170) = w{ player = p {playerlocation = (x,170)}}
         | otherwise = w 
+
+    isPaused :: World -> Bool
+    isPaused w@(World {pause = paused})
+        | paused == Play = False
+        | paused == Pause = True    
 
 
