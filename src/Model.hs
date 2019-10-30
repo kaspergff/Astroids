@@ -39,14 +39,16 @@ module Model where
     data Bullet = Bullet {
                 bulletLocation :: (Float, Float),            
                 --bmovement :: Movement
-                speed :: Float
+                speed :: Float,
+                bulletStatus :: DestroyedOrNot
+
                }
 
     data Asteroid = Asteroid {
                     location		:: (Float,Float),
                     --direction_angle :: Float,
                     --speed           :: Float,
-                    --size            :: Int
+                    size            :: Float,
                     --asteroid_state  :: State
                     status  :: DestroyedOrNot
                     }
