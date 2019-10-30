@@ -33,7 +33,8 @@ module Model where
 
     data Bullet = Bullet {
                 bulletLocation :: (Float, Float),            
-                bmovement :: Movement
+                --bmovement :: Movement
+                speed :: Float
                }
 
     data Asteroid = Asteroid {
