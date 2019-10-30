@@ -38,10 +38,10 @@ module Model where
     data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)
 
     -- pause the game
-    data PauseorPlay = Pause | Play deriving (Eq)
+    data PauseorPlay = Paused | Playing deriving (Eq)
                                
     initial_world :: World
-    initial_world = World (Player (0,-180) NoMovement) Play
+    initial_world = World (Player (0,-180) NoMovement) Playing
                 
     initialState :: GameState
     initialState = GameState (ShowWorld(initial_world)) initial_world 0 _

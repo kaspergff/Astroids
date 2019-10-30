@@ -12,8 +12,8 @@ module Controller where
     -- | Handle one iteration of the game
     step :: Float -> GameState -> IO GameState
     step secs gstate  
-        | (isPaused $ world gstate) == False = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
-        | otherwise = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
+        | (isPaused $ world gstate) == True = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
+        | otherwise = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
     
     -- | Handle user input
     input :: Event -> GameState -> IO GameState
@@ -28,7 +28,11 @@ module Controller where
     inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
     --inputKey (EventKey (SpecialKey (KeySpace)) )
     
+    inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
+    inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
     inputKey _ gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = NoMovement}}}
+    
+ 
 
 
 
@@ -57,7 +61,7 @@ module Controller where
 
     isPaused :: World -> Bool
     isPaused w@(World {pause = paused})
-        | paused == Play = False
-        | paused == Pause = True    
+        | paused == Playing = False
+        | paused == Paused = True    
 
 
