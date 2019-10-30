@@ -27,7 +27,8 @@ module Controller where
     inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = RightMovement}}}
     inputKey (EventKey (SpecialKey (KeyUp)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
     inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
-    --inputKey (EventKey (SpecialKey (KeySpace)) )
+    --bullet
+    inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = w {bullets = (createbullet w)}}
     
     inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
     inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
@@ -35,10 +36,11 @@ module Controller where
     
  
 
-
+    createbullet :: World -> [Bullet]
+    createbullet w@(World {player = p@(Player {playerlocation = (x,y)}), bullets = listOfBullets})  = listOfBullets ++ [(Bullet {bulletLocation = (x,y),bmovement = UpMovement})]
 
     updateWorld :: World -> World
-    updateWorld w = updatePlane $ planeOnScreen w
+    updateWorld w = updatePlane $ planeOnScreen w $ createbullet
 
 
     -- Move plane

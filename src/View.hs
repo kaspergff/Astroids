@@ -18,7 +18,7 @@ module View where
 
     -- Main draw function
     drawWorld :: World -> Picture
-    drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = translate x y drawPlane
+    drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) =  Pictures [translate x y drawPlane, drawbullets]
 
     drawPlane :: Picture
     drawPlane = Pictures[plane, planeNose]
@@ -28,3 +28,9 @@ module View where
 
     planeNose :: Picture
     planeNose = color yellow (Polygon [(-2, 15), (0,20), (2, 15), (2, 8), (-2, 8), (-2, 10)])
+
+    bullet :: Picture
+    bullet = color red $ ThickCircle 5 5
+
+    drawbullets :: Picture
+    drawbullets = Pictures [bullet]

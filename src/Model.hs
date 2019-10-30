@@ -31,9 +31,9 @@ module Model where
     -- bullets
 
     data Bullet = Bullet {
-    bulletSpeed 	 :: Float,
-    bulletLocation :: (Float, Float)
-    }
+                bulletLocation :: (Float, Float),            
+                bmovement :: Movement
+               }
 
 
     -- movement player
@@ -43,7 +43,7 @@ module Model where
     data PauseorPlay = Paused | Playing deriving (Eq)
                                
     initial_world :: World
-    initial_world = World (Player (0,-180) NoMovement) Playing
+    initial_world = World (Player (0,-180) NoMovement) Playing []
                 
     initialState :: GameState
-    initialState = GameState (ShowWorld(initial_world)) initial_world 0 _
+    initialState = GameState (ShowWorld(initial_world)) initial_world 0 
