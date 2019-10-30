@@ -14,10 +14,11 @@ module Controller where
     step secs gstate = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
     
     -- | Handle user input
- 
     input :: Event -> GameState -> IO GameState
     input e gstate = return (inputKey e gstate)
 
+
+    -- Key input
     inputKey :: Event -> GameState -> GameState                                             
     inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = LeftMovement}}}
     inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = RightMovement}}}
@@ -31,18 +32,20 @@ module Controller where
     updateWorld w = updatePlane $ planeOnScreen w
 
 
+    -- Move plane
     updatePlane :: World -> World
     updatePlane w@(World(Player {playerlocation = (x,y), movement = dir}))
-        | dir == RightMovement = World(Player {playerlocation = (x + 10 ,y), movement = RightMovement})
-        | dir == LeftMovement = World(Player {playerlocation = (x - 10,y), movement = LeftMovement})
-        | dir == DownMovement = World(Player {playerlocation = (x,y - 10), movement = DownMovement})
-        | dir == UpMovement = World(Player {playerlocation = (x,y + 10), movement = UpMovement})
+        | dir == RightMovement = World(Player {playerlocation = (x + 11 ,y), movement = RightMovement})
+        | dir == LeftMovement = World(Player {playerlocation = (x - 11,y), movement = LeftMovement})
+        | dir == DownMovement = World(Player {playerlocation = (x,y - 11), movement = DownMovement})
+        | dir == UpMovement = World(Player {playerlocation = (x,y + 11), movement = UpMovement})
         | dir == NoMovement = w
 
+    -- Keep plane on screen
     planeOnScreen :: World -> World
     planeOnScreen w@(World p@(Player {playerlocation = (x,y)}))
-        | x <= (-194) = w{ player = p {playerlocation = (-194,y)}}
-        | x >= (194) = w{ player = p {playerlocation = (194,y)}}
+        | x <= (-200) = w{ player = p {playerlocation = (200,y)}}
+        | x >= (200) = w{ player = p {playerlocation = (-200,y)}}
         | y <= (-190) = w{ player = p {playerlocation = (x,-190)}}
         | y >= (170) = w{ player = p {playerlocation = (x,170)}}
         | otherwise = w 
