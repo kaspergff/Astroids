@@ -28,21 +28,17 @@ module Controller where
     inputKey (EventKey (SpecialKey (KeyUp)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
     inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
     --bullet
-    inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = w {bullets = (createbullet w)}}
+    inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = (spawnBullet w)}
     
     inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
     inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
     inputKey _ gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = NoMovement}}}
     
- 
-
-    createbullet :: World -> [Bullet]
-    createbullet w@(World {player = p@(Player {playerlocation = (x,y)}), bullets = listOfBullets})  = listOfBullets ++ [(Bullet {bulletLocation = (x,y),bmovement = UpMovement})]
-
     updateWorld :: World -> World
     updateWorld w = 
         updatePlane $ 
         planeOnScreen $ 
+        updateBullets $
         updateAsteroids $ 
         timeToSpawnAsteroid w
 
@@ -94,3 +90,14 @@ module Controller where
 
 
 
+    updateBullets :: World -> World
+    updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
+
+    updateBullet :: Bullet -> Bullet
+    updateBullet Bullet{ bulletLocation = (x,y), speed = s} = Bullet{ bulletLocation = (x,(y+s)), speed = s}
+
+    spawnBullet :: World -> World
+    spawnBullet w@(World {player = p@(Player {playerlocation = (x,y)}), bullets = listOfBullets}) = w{bullets = listOfBullets ++ [(createBullet (x,y))] }
+
+    createBullet :: (Float,Float) -> Bullet
+    createBullet (x,y) = (Bullet (x,y) 20)

@@ -20,7 +20,7 @@ module View where
     drawWorld :: World -> Picture
     drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = Pictures
         (drawAsteroids w ++
-        [translate x y drawPlane]
+        [translate x y drawPlane] ++ drawbullets w
         )
 
     drawPlane :: Picture
@@ -32,12 +32,17 @@ module View where
     planeNose :: Picture
     planeNose = color yellow (Polygon [(-2, 15), (0,20), (2, 15), (2, 8), (-2, 8), (-2, 10)])
 
+
+
+
+    drawbullets :: World -> [Picture]
+    drawbullets w@(World {bullets = listOfBullets}) = map drawbullet listOfBullets
+    
+    drawbullet :: Bullet -> Picture
+    drawbullet Bullet { bulletLocation = (x,y)} = translate x y bullet
+    
     bullet :: Picture
     bullet = color red $ ThickCircle 5 5
-
-    drawbullets :: Picture
-    drawbullets = Pictures [bullet]
-    
 
     drawAsteroids :: World -> [Picture]
     drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids
