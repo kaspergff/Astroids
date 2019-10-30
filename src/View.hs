@@ -20,7 +20,7 @@ module View where
     drawWorld :: World -> Picture
     drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = Pictures
         (drawAsteroids w ++
-        [translate x y drawPlane] ++ drawbullets w ++ drawScore w
+        [translate x y drawPlane] ++ drawbullets w ++ drawScore w ++ drawlives w
         )
 
     drawPlane :: Picture
@@ -55,4 +55,7 @@ module View where
     asteroid =  color white $ ThickCircle 5 5
 
     drawScore :: World -> [Picture]
-    drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 800 800 (Text (show s))))]
+    drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 200 400 (Text (show s))))]
+
+    drawlives :: World -> [Picture]
+    drawlives w@(World {lives = l}) = [(scale 0.2 0.2 (translate 200 400 (Text (show l))))]

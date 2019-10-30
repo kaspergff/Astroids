@@ -37,13 +37,13 @@ module Controller where
     updateWorld :: World -> World
     updateWorld w = 
         updatePlane $ 
+        asteroidPlayer $
         planeOnScreen $ 
         updateBullets $
         scoreChecker $
         updateAsteroids $ 
         timeToSpawnAsteroid $
         asteroidBullet w
-
 
     -- Move plane
     updatePlane :: World -> World
@@ -100,10 +100,6 @@ module Controller where
     setRanNum :: StdGen -> Float
     setRanNum g = getRanNum (genereerRanNum g)
     
-
-
-
-
     updateBullets :: World -> World
     updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
@@ -131,8 +127,18 @@ module Controller where
                 check asteroid | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
                                | otherwise = asteroid{status = Destroyed}   
     --player and asteroid
-
-
+    collisionAsteroidplayer :: Player -> Asteroid -> Bool
+    collisionAsteroidplayer  p@(Player {playerlocation = (bx,by)}) a@( Asteroid {location = (ax,ay), status = s})
+        | ax >= (bx-15) && ax <= (bx+15) && ay >= (by-15) && ay <= (by+15) = True
+        | otherwise = False
+    
+    asteroidPlayer :: World -> World
+    asteroidPlayer w@(World {asteroids = []}) = w
+    asteroidPlayer w@(World {asteroids = listOfAsteroids, lives = l ,player = p}) 
+        | all (==False) (map (collisionAsteroidplayer p) listOfAsteroids) == True = w 
+        | otherwise = w{lives = (l -1)}
+        
+   
 
     --calcscore
 
