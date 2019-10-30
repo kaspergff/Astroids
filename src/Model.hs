@@ -18,10 +18,11 @@ module Model where
     data World = World {
                 player  :: Player,
                 pause   :: PauseorPlay,
-                bullets     :: [Bullet]
+                bullets     :: [Bullet],
+                asteroids   :: [Asteroid]
                 }
 
-                
+
     -- player
     data Player = Player {
                 playerlocation  :: (Float,Float),
@@ -35,6 +36,15 @@ module Model where
                 bmovement :: Movement
                }
 
+    data Asteroid = Asteroid {
+                    location		:: (Float,Float)
+                    --direction_angle :: Float,
+                    --speed           :: Float,
+                    --size            :: Int
+                    --asteroid_state  :: State
+                    }
+
+
 
     -- movement player
     data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)
@@ -43,7 +53,7 @@ module Model where
     data PauseorPlay = Paused | Playing deriving (Eq)
                                
     initial_world :: World
-    initial_world = World (Player (0,-180) NoMovement) Playing []
+    initial_world = World (Player (0,-180) NoMovement) Playing [] []
                 
     initialState :: GameState
     initialState = GameState (ShowWorld(initial_world)) initial_world 0 
