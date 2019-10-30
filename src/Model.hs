@@ -15,18 +15,23 @@ module Model where
                      }
 
     data World = World {
-                player  :: Player
+                player  :: Player,
+                pause   :: PauseorPlay
                 }
 
+    -- player            
     data Player = Player {
                 playerlocation  :: (Float,Float),
                 movement        :: Movement
                 }
-    
+    -- movement player
     data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)
+
+    -- pause the game
+    data PauseorPlay = Pause | Play deriving (Eq)
                                
     initial_world :: World
-    initial_world = World (Player (0,-180) NoMovement)
+    initial_world = World (Player (0,-180) NoMovement) Play
                 
 
 

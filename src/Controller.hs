@@ -34,16 +34,16 @@ module Controller where
 
     -- Move plane
     updatePlane :: World -> World
-    updatePlane w@(World(Player {playerlocation = (x,y), movement = dir}))
-        | dir == RightMovement = World(Player {playerlocation = (x + 11 ,y), movement = RightMovement})
-        | dir == LeftMovement = World(Player {playerlocation = (x - 11,y), movement = LeftMovement})
-        | dir == DownMovement = World(Player {playerlocation = (x,y - 11), movement = DownMovement})
-        | dir == UpMovement = World(Player {playerlocation = (x,y + 11), movement = UpMovement})
+    updatePlane w@(World {player = p@(Player {playerlocation = (x,y), movement = dir})})
+        | dir == RightMovement = w{ player = p {playerlocation = (x + 11 ,y), movement = RightMovement}}
+        | dir == LeftMovement = w{ player = p {playerlocation = (x - 11,y), movement = LeftMovement}}
+        | dir == DownMovement = w{ player = p {playerlocation = (x,y - 11), movement = DownMovement}}
+        | dir == UpMovement = w{ player = p {playerlocation = (x,y + 11), movement = UpMovement}}
         | dir == NoMovement = w
 
     -- Keep plane on screen
     planeOnScreen :: World -> World
-    planeOnScreen w@(World p@(Player {playerlocation = (x,y)}))
+    planeOnScreen w@(World {player = p@(Player {playerlocation = (x,y)})})
         | x <= (-200) = w{ player = p {playerlocation = (200,y)}}
         | x >= (200) = w{ player = p {playerlocation = (-200,y)}}
         | y <= (-190) = w{ player = p {playerlocation = (x,-190)}}

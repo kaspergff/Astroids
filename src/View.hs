@@ -17,7 +17,7 @@ module View where
 
     -- Main draw function
     drawWorld :: World -> Picture
-    drawWorld w@(World (Player {playerlocation = (x,y)})) = translate x y drawPlane
+    drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = translate x y drawPlane
 
     drawPlane :: Picture
     drawPlane = Pictures[plane, planeNose]
