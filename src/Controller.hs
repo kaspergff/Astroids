@@ -40,7 +40,7 @@ module Controller where
     createbullet w@(World {player = p@(Player {playerlocation = (x,y)}), bullets = listOfBullets})  = listOfBullets ++ [(Bullet {bulletLocation = (x,y),bmovement = UpMovement})]
 
     updateWorld :: World -> World
-    updateWorld w = updatePlane $ planeOnScreen w $ createbullet
+    updateWorld w = updatePlane $ planeOnScreen w 
 
 
     -- Move plane
