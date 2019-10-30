@@ -12,12 +12,13 @@ module Model where
                        infoToShow  :: InfoToShow
                      , world       :: World
                      , elapsedTime :: Float
-                     , bullets     :: [Bullet]
+                     
                      }
 
     data World = World {
                 player  :: Player,
-                pause   :: PauseorPlay
+                pause   :: PauseorPlay,
+                bullets     :: [Bullet]
                 }
 
                 
