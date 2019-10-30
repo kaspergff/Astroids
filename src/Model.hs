@@ -12,6 +12,7 @@ module Model where
                        infoToShow  :: InfoToShow
                      , world       :: World
                      , elapsedTime :: Float
+                     , bullets     :: [Bullet]
                      }
 
     data World = World {
@@ -19,11 +20,20 @@ module Model where
                 pause   :: PauseorPlay
                 }
 
-    -- player            
+    -- player
     data Player = Player {
                 playerlocation  :: (Float,Float),
                 movement        :: Movement
                 }
+
+    -- bullets
+
+    data Bullet = Bullet {
+    bulletSpeed 	 :: Float,
+    bulletLocation :: (Float, Float)
+    }
+
+
     -- movement player
     data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)
 
@@ -33,7 +43,5 @@ module Model where
     initial_world :: World
     initial_world = World (Player (0,-180) NoMovement) Play
                 
-
-
     initialState :: GameState
-    initialState = GameState (ShowWorld(initial_world)) initial_world 0 
+    initialState = GameState (ShowWorld(initial_world)) initial_world 0 _

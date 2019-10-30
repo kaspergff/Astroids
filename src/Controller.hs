@@ -26,6 +26,8 @@ module Controller where
     inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = RightMovement}}}
     inputKey (EventKey (SpecialKey (KeyUp)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
     inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
+    --inputKey (EventKey (SpecialKey (KeySpace)) )
+    
     inputKey _ gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = NoMovement}}}
 
 
@@ -36,6 +38,7 @@ module Controller where
 
     -- Move plane
     updatePlane :: World -> World
+
     updatePlane w@(World {player = p@(Player {playerlocation = (x,y), movement = dir})})
         | dir == RightMovement = w{ player = p {playerlocation = (x + 11 ,y), movement = RightMovement}}
         | dir == LeftMovement = w{ player = p {playerlocation = (x - 11,y), movement = LeftMovement}}
@@ -46,10 +49,10 @@ module Controller where
     -- Keep plane on screen
     planeOnScreen :: World -> World
     planeOnScreen w@(World {player = p@(Player {playerlocation = (x,y)})})
-        | x <= (-200) = w{ player = p {playerlocation = (200,y)}}
-        | x >= (200) = w{ player = p {playerlocation = (-200,y)}}
-        | y <= (-190) = w{ player = p {playerlocation = (x,-190)}}
-        | y >= (170) = w{ player = p {playerlocation = (x,170)}}
+        | x < (-200) = w{ player = p {playerlocation = (-200,y)}}
+        | x > (200) = w{ player = p {playerlocation = (200,y)}}
+        | y < (-190) = w{ player = p {playerlocation = (x,-190)}}
+        | y > (170) = w{ player = p {playerlocation = (x,170)}}
         | otherwise = w 
 
     isPaused :: World -> Bool
