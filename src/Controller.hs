@@ -78,7 +78,7 @@ module Controller where
     spawnAsteroid w@(World {asteroids = listOfAsteroids}) = w{asteroids = listOfAsteroids ++ [createAsteroid] }
 
     createAsteroid :: Asteroid
-    createAsteroid = Asteroid (100,0)
+    createAsteroid = Asteroid (100,0) NotDestroyed
 
     timeToSpawnAsteroid :: World -> World
     timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
@@ -103,6 +103,17 @@ module Controller where
     createBullet :: (Float,Float) -> Bullet
     createBullet (x,y) = (Bullet (x,y) 20)
 
+
+
+
+    collisionAsteroidBullet :: Asteroid -> Bullet -> Asteroid
+    collisionAsteroidBullet a@(Asteroid {location = (ax,ay), status = s}) b@(Bullet {bulletLocation= (bx,by)})
+        | ax == bx && ay == by = a{status = Destroyed}
+        | otherwise = a
+
+
+    --collisioncheck :: World -> World
+    --collisioncheck w@(World {asteroids = listOfAsteroids, bullets = listOfBullets})
     --collisionchecks
     --checkcollision1 :: Asteroid -> Bullet -> Bool
     --checkcollision1  Asteroid{ location = (x1,y1)} Bullet{ bulletLocation = (x2,y2)} | x1 == x2 && y1 ==y2 = True

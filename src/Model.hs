@@ -39,11 +39,12 @@ module Model where
                }
 
     data Asteroid = Asteroid {
-                    location		:: (Float,Float)
+                    location		:: (Float,Float),
                     --direction_angle :: Float,
                     --speed           :: Float,
                     --size            :: Int
                     --asteroid_state  :: State
+                    status  :: DestroyedOrNot
                     }
 
 
@@ -53,6 +54,8 @@ module Model where
 
     -- pause the game
     data PauseorPlay = Paused | Playing deriving (Eq)
+
+    data DestroyedOrNot = Destroyed | NotDestroyed 
                                
     initial_world :: World
     initial_world = World (Player (0,-180) NoMovement) Playing [] [] 0
