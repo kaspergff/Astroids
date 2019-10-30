@@ -84,13 +84,7 @@ module Controller where
     timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
         | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
         | otherwise = w {asteroidTimer = time - 1}
-
-    --getRandomNumber :: (Int, Int) -> Int
-    --getRandomNumber (a, b) = randomRIO (a,b)
-
-
-
-
+    
     updateBullets :: World -> World
     updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
@@ -112,3 +106,5 @@ module Controller where
 
     --checkcollision3 :: World -> World
     --checkcollision3 w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) =      
+
+    
