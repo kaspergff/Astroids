@@ -20,7 +20,7 @@ module View where
     drawWorld :: World -> Picture
     drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = Pictures
         (drawAsteroids w ++
-        [translate x y drawPlane] ++ drawbullets w ++ drawScore w
+        [translate x y drawPlane] ++ drawbullets w ++ drawScore w ++ drawlives w
         )
 
     drawPlane :: Picture
@@ -37,9 +37,7 @@ module View where
     drawbullets w@(World {bullets = listOfBullets}) = map drawbullet listOfBullets
     
     drawbullet :: Bullet -> Picture
-    drawbullet Bullet { bulletLocation = (x,y), bulletStatus = s}
-        | s == NotDestroyed = translate x y bullet
-        | otherwise = Blank
+    drawbullet Bullet { bulletLocation = (x,y), bulletStatus = s} = translate x y bullet
                                                           
     
     bullet :: Picture
@@ -49,12 +47,13 @@ module View where
     drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids
 
     drawAsteroid :: Asteroid -> Picture
-    drawAsteroid Asteroid{ location = (x,y) , status = s, size = si} 
-        | s == NotDestroyed = translate x y (asteroid si)
-        | otherwise = Blank
+    drawAsteroid Asteroid{ location = (x,y) , status = s, size = si} = translate x y (asteroid si)
 
     asteroid :: Float -> Picture
     asteroid a =  color white $ Line [(0*a,0*a), (5*a,4*a), (6*a,7*a), (4*a,9*a), (-3*a, 12*a), (-8*a,7*a),(-6*a,3*a),(0*a,0*a)]
 
     drawScore :: World -> [Picture]
-    drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 800 800 (color white $ Text (show s))))]
+    drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 200 400 (Text (show s))))]
+
+    drawlives :: World -> [Picture]
+    drawlives w@(World {lives = l}) = [(scale 0.2 0.2 (translate 200 400 (Text (show l))))]
