@@ -76,18 +76,29 @@ module Controller where
     updateAsteroid a@(Asteroid{ location = (x,y)}) = a{ location = (x,y-2)}
 
     spawnAsteroid :: World -> World
-    spawnAsteroid w@(World {asteroids = listOfAsteroids}) = w{asteroids = listOfAsteroids ++ [createAsteroid] }
+    spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g }) = w{asteroids = listOfAsteroids ++ [createAsteroid (setRanNum g)],
+    asteroidsSpawnGenerator = getGen (genereerRanNum g) }
 
-    createAsteroid :: Asteroid
-    createAsteroid = Asteroid (100,0) NotDestroyed
+    createAsteroid :: Float -> Asteroid
+    createAsteroid x  = Asteroid (x,200) NotDestroyed
 
     timeToSpawnAsteroid :: World -> World
     timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
         | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
         | otherwise = w {asteroidTimer = time - 1}
 
-    --getRandomNumber :: (Int, Int) -> Int
-    --getRandomNumber (a, b) = randomRIO (a,b)
+    genereerRanNum :: StdGen -> (Float, StdGen)
+    genereerRanNum g = randomR ((-175), 175) g
+
+    getRanNum :: (Float, StdGen) -> Float
+    getRanNum (x, _) = x
+
+    getGen :: (Float, StdGen) -> StdGen
+    getGen (_, g) = g
+    
+    setRanNum :: StdGen -> Float
+    setRanNum g = getRanNum (genereerRanNum g)
+    
 
 
 
@@ -96,7 +107,7 @@ module Controller where
     updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
     updateBullet :: Bullet -> Bullet
-    updateBullet Bullet{ bulletLocation = (x,y), speed = s} = Bullet{ bulletLocation = (x,(y+s)), speed = s}
+    updateBullet b@(Bullet{ bulletLocation = (x,y), speed = s}) = b{ bulletLocation = (x,(y+s)), speed = s}
 
     spawnBullet :: World -> World
     spawnBullet w@(World {player = p@(Player {playerlocation = (x,y)}), bullets = listOfBullets}) = w{bullets = listOfBullets ++ [(createBullet (x,y))] }
@@ -112,17 +123,6 @@ module Controller where
         | ax == bx && ay == by = True
         | otherwise = False
 
-
-  
-{--
-    asteroidBullet :: World -> World
-    asteroidBullet w@(World {asteroids = []}) = w
-    asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
-            where check asteroid = if all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets)
-                              then asteroid
-                              else asteroid{status = Destroyed}    
---}
-
     asteroidBullet :: World -> World
     asteroidBullet w@(World {asteroids = []}) = w
     asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
@@ -134,12 +134,3 @@ module Controller where
 
 
 
-    --collisionchecks
-    --checkcollision1 :: Asteroid -> Bullet -> Bool
-    --checkcollision1  Asteroid{ location = (x1,y1)} Bullet{ bulletLocation = (x2,y2)} | x1 == x2 && y1 ==y2 = True
-    --                                                                                 | otherwise = False  
-
-    --checkcollision2 :: 
-
-    --checkcollision3 :: World -> World
-    --checkcollision3 w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) =      

@@ -2,6 +2,8 @@
 --   which represent the state of the game
 module Model where
 
+    import System.Random
+
     data InfoToShow = ShowNothing
                     | ShowWorld World
     
@@ -20,7 +22,8 @@ module Model where
                 pause   :: PauseorPlay,
                 bullets     :: [Bullet],
                 asteroids   :: [Asteroid],
-                asteroidTimer   :: Int
+                asteroidTimer   :: Int,
+                asteroidsSpawnGenerator :: StdGen
                 }
 
 
@@ -57,8 +60,8 @@ module Model where
 
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
                                
-    initial_world :: World
-    initial_world = World (Player (0,-180) NoMovement) Playing [] [] 0
+    initial_world :: StdGen -> World
+    initial_world esg = World (Player (0,-180) NoMovement) Playing [] [] 0 esg
                 
-    initialState :: GameState
-    initialState = GameState (ShowWorld(initial_world)) initial_world 0 
+    initialState :: StdGen -> GameState
+    initialState esg = GameState (ShowWorld(initial_world esg)) (initial_world esg) 0 
