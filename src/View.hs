@@ -14,11 +14,14 @@ module View where
       ShowNothing       -> blank
       ShowWorld world   -> drawWorld world
 
-      
+
 
     -- Main draw function
     drawWorld :: World -> Picture
-    drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = translate x y drawPlane
+    drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = Pictures
+        (drawAsteroids w ++
+        [translate x y drawPlane]
+        )
 
     drawPlane :: Picture
     drawPlane = Pictures[plane, planeNose]
@@ -28,3 +31,14 @@ module View where
 
     planeNose :: Picture
     planeNose = color yellow (Polygon [(-2, 15), (0,20), (2, 15), (2, 8), (-2, 8), (-2, 10)])
+    
+
+    drawAsteroids :: World -> [Picture]
+    drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids
+
+    drawAsteroid :: Asteroid -> Picture
+    drawAsteroid Asteroid{ location = (x,y)} = translate x y asteroid
+
+    asteroid :: Picture
+    asteroid =  color white $ ThickCircle 5 5
+

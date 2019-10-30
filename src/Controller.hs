@@ -9,7 +9,7 @@ module Controller where
     import System.Random
     import System.Environment
     
-    
+
     -- | Handle one iteration of the game
     step :: Float -> GameState -> IO GameState
     step secs gstate  
@@ -38,7 +38,11 @@ module Controller where
 
 
     updateWorld :: World -> World
-    updateWorld w = updatePlane $ planeOnScreen w
+    updateWorld w = 
+        updatePlane $ 
+        planeOnScreen $ 
+        updateAsteroids $ 
+        spawnAsteroid w
 
 
     -- Move plane
@@ -65,4 +69,16 @@ module Controller where
         | paused == Playing = False
         | paused == Paused = True    
 
+    -- Update all asteroids    
+    updateAsteroids :: World -> World
+    updateAsteroids w@(World {asteroids = listOfAsteroids}) = w{asteroids = map updateAsteroid listOfAsteroids}
+
+    updateAsteroid :: Asteroid -> Asteroid
+    updateAsteroid Asteroid{ location = (x,y)} = Asteroid{ location = (x,y-10)}
+
+    spawnAsteroid :: World -> World
+    spawnAsteroid w@(World {asteroids = listOfAsteroids}) = w{asteroids = listOfAsteroids ++ [createAsteroid] }
+
+    createAsteroid :: Asteroid
+    createAsteroid = Asteroid (100,0)
 
