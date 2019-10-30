@@ -90,14 +90,24 @@ module Controller where
 
 
 
-    updateBullets :: World -> World
-    updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
+updateBullets :: World -> World
+updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
-    updateBullet :: Bullet -> Bullet
-    updateBullet Bullet{ bulletLocation = (x,y), speed = s} = Bullet{ bulletLocation = (x,(y+s)), speed = s}
+updateBullet :: Bullet -> Bullet
+updateBullet Bullet{ bulletLocation = (x,y), speed = s} = Bullet{ bulletLocation = (x,(y+s)), speed = s}
 
-    spawnBullet :: World -> World
-    spawnBullet w@(World {player = p@(Player {playerlocation = (x,y)}), bullets = listOfBullets}) = w{bullets = listOfBullets ++ [(createBullet (x,y))] }
+spawnBullet :: World -> World
+spawnBullet w@(World {player = p@(Player {playerlocation = (x,y)}), bullets = listOfBullets}) = w{bullets = listOfBullets ++ [(createBullet (x,y))] }
 
-    createBullet :: (Float,Float) -> Bullet
-    createBullet (x,y) = (Bullet (x,y) 20)
+createBullet :: (Float,Float) -> Bullet
+createBullet (x,y) = (Bullet (x,y) 20)
+
+--collisionchecks
+--checkcollision1 :: Asteroid -> Bullet -> Bool
+--checkcollision1  Asteroid{ location = (x1,y1)} Bullet{ bulletLocation = (x2,y2)} | x1 == x2 && y1 ==y2 = True
+                                                                                 | otherwise = False  
+
+--checkcollision2 :: 
+
+--checkcollision3 :: World -> World
+--checkcollision3 w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) =      
