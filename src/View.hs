@@ -32,9 +32,6 @@ module View where
     planeNose :: Picture
     planeNose = color yellow (Polygon [(-2, 15), (0,20), (2, 15), (2, 8), (-2, 8), (-2, 10)])
 
-
-
-
     drawbullets :: World -> [Picture]
     drawbullets w@(World {bullets = listOfBullets}) = map drawbullet listOfBullets
     
