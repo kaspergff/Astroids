@@ -23,7 +23,8 @@ module Model where
                 bullets     :: [Bullet],
                 asteroids   :: [Asteroid],
                 asteroidTimer   :: Int,
-                asteroidsSpawnGenerator :: StdGen
+                asteroidsSpawnGenerator :: StdGen,
+                score         :: Int
                 }
 
 
@@ -61,7 +62,7 @@ module Model where
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
                                
     initial_world :: StdGen -> World
-    initial_world esg = World (Player (0,-180) NoMovement) Playing [] [] 0 esg
+    initial_world esg = World (Player (0,-180) NoMovement) Playing [] [] 0 esg 0
                 
     initialState :: StdGen -> GameState
     initialState esg = GameState (ShowWorld(initial_world esg)) (initial_world esg) 0 
