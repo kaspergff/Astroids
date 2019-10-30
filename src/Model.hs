@@ -16,11 +16,12 @@ module Model where
                      }
 
     data World = World {
-                player  :: Player,
-                pause   :: PauseorPlay,
-                bullets     :: [Bullet],
-                asteroids   :: [Asteroid],
-                asteroidTimer   :: Int
+                player        :: Player,
+                pause         :: PauseorPlay,
+                bullets       :: [Bullet],
+                asteroids     :: [Asteroid],
+                asteroidTimer :: Int,
+                score         :: Int
                 }
 
 
@@ -58,7 +59,7 @@ module Model where
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
                                
     initial_world :: World
-    initial_world = World (Player (0,-180) NoMovement) Playing [] [] 0
+    initial_world = World (Player (0,-180) NoMovement) Playing [] [] 0 0 
                 
     initialState :: GameState
     initialState = GameState (ShowWorld(initial_world)) initial_world 0 

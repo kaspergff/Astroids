@@ -39,6 +39,7 @@ module Controller where
         updatePlane $ 
         planeOnScreen $ 
         updateBullets $
+        scoreChecker $
         updateAsteroids $ 
         timeToSpawnAsteroid $
         asteroidBullet w
@@ -48,8 +49,8 @@ module Controller where
     updatePlane :: World -> World
 
     updatePlane w@(World {player = p@(Player {playerlocation = (x,y), movement = dir})})
-        | dir == RightMovement = w{ player = p {playerlocation = (x + 1 ,y), movement = RightMovement}}
-        | dir == LeftMovement = w{ player = p {playerlocation = (x - 1,y), movement = LeftMovement}}
+        | dir == RightMovement = w{ player = p {playerlocation = (x + 11 ,y), movement = RightMovement}}
+        | dir == LeftMovement = w{ player = p {playerlocation = (x - 11,y), movement = LeftMovement}}
         | dir == DownMovement = w{ player = p {playerlocation = (x,y - 11), movement = DownMovement}}
         | dir == UpMovement = w{ player = p {playerlocation = (x,y + 11), movement = UpMovement}}
         | dir == NoMovement = w
@@ -79,13 +80,15 @@ module Controller where
     spawnAsteroid w@(World {asteroids = listOfAsteroids}) = w{asteroids = listOfAsteroids ++ [createAsteroid] }
 
     createAsteroid :: Asteroid
-    createAsteroid = Asteroid (100,0) NotDestroyed
+    createAsteroid = Asteroid (100,0) NotDestroyed 
 
     timeToSpawnAsteroid :: World -> World
     timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
         | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
         | otherwise = w {asteroidTimer = time - 1}
     
+    -- Update all bullets
+
     updateBullets :: World -> World
     updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
@@ -98,44 +101,31 @@ module Controller where
     createBullet :: (Float,Float) -> Bullet
     createBullet (x,y) = (Bullet (x,y) 20)
 
-
-
+    --collision checkers
+    --asteroid and bullet
 
     collisionAsteroidBullet :: Asteroid -> Bullet -> Bool
     collisionAsteroidBullet a@(Asteroid {location = (ax,ay), status = s}) b@(Bullet {bulletLocation= (bx,by)})
-        | ax == bx && ay == by = True
+        | ax >= (bx-15) && ax <= (bx+15) && ay >= (by-15) && ay <= (by+15) = True
         | otherwise = False
 
-
-  
-{--
     asteroidBullet :: World -> World
     asteroidBullet w@(World {asteroids = []}) = w
-    asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
-            where check asteroid = if all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets)
-                              then asteroid
-                              else asteroid{status = Destroyed}    
---}
-
-    asteroidBullet :: World -> World
-    asteroidBullet w@(World {asteroids = []}) = w
-    asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
+    asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, score = s}) = w{asteroids = map check listOfAsteroids}
             where
-                check asteroid
-                    | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
-                    | otherwise = asteroid{status = Destroyed}  
+                check asteroid | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
+                               | otherwise = asteroid{status = Destroyed}   
+    --player and asteroid
 
 
 
+    --calcscore
 
-    --collisionchecks
-    --checkcollision1 :: Asteroid -> Bullet -> Bool
-    --checkcollision1  Asteroid{ location = (x1,y1)} Bullet{ bulletLocation = (x2,y2)} | x1 == x2 && y1 ==y2 = True
-    --                                                                                 | otherwise = False  
-
-    --checkcollision2 :: 
-
-    --checkcollision3 :: World -> World
-    --checkcollision3 w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) =      
+    scoreChecker :: World -> World
+    scoreChecker w@(World {asteroids = asteroidList, score = s}) = w{ score = length (filter (==Destroyed) (statelist asteroidList))}
+                where 
+                    statelist :: [Asteroid] -> [DestroyedOrNot]
+                    statelist x = [ s |  (Asteroid { location = l, status = s}) <- x ]
+     
 
     
