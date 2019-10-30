@@ -40,15 +40,16 @@ module Controller where
         planeOnScreen $ 
         updateBullets $
         updateAsteroids $ 
-        timeToSpawnAsteroid w
+        timeToSpawnAsteroid $
+        asteroidBullet w
 
 
     -- Move plane
     updatePlane :: World -> World
 
     updatePlane w@(World {player = p@(Player {playerlocation = (x,y), movement = dir})})
-        | dir == RightMovement = w{ player = p {playerlocation = (x + 11 ,y), movement = RightMovement}}
-        | dir == LeftMovement = w{ player = p {playerlocation = (x - 11,y), movement = LeftMovement}}
+        | dir == RightMovement = w{ player = p {playerlocation = (x + 1 ,y), movement = RightMovement}}
+        | dir == LeftMovement = w{ player = p {playerlocation = (x - 1,y), movement = LeftMovement}}
         | dir == DownMovement = w{ player = p {playerlocation = (x,y - 11), movement = DownMovement}}
         | dir == UpMovement = w{ player = p {playerlocation = (x,y + 11), movement = UpMovement}}
         | dir == NoMovement = w
@@ -72,7 +73,7 @@ module Controller where
     updateAsteroids w@(World {asteroids = listOfAsteroids}) = w{asteroids = map updateAsteroid listOfAsteroids}
 
     updateAsteroid :: Asteroid -> Asteroid
-    updateAsteroid Asteroid{ location = (x,y)} = Asteroid{ location = (x,y-2)}
+    updateAsteroid a@(Asteroid{ location = (x,y)}) = a{ location = (x,y-2)}
 
     spawnAsteroid :: World -> World
     spawnAsteroid w@(World {asteroids = listOfAsteroids}) = w{asteroids = listOfAsteroids ++ [createAsteroid] }
@@ -106,14 +107,33 @@ module Controller where
 
 
 
-    collisionAsteroidBullet :: Asteroid -> Bullet -> Asteroid
+    collisionAsteroidBullet :: Asteroid -> Bullet -> Bool
     collisionAsteroidBullet a@(Asteroid {location = (ax,ay), status = s}) b@(Bullet {bulletLocation= (bx,by)})
-        | ax == bx && ay == by = a{status = Destroyed}
-        | otherwise = a
+        | ax == bx && ay == by = True
+        | otherwise = False
 
 
-    --collisioncheck :: World -> World
-    --collisioncheck w@(World {asteroids = listOfAsteroids, bullets = listOfBullets})
+  
+{--
+    asteroidBullet :: World -> World
+    asteroidBullet w@(World {asteroids = []}) = w
+    asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
+            where check asteroid = if all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets)
+                              then asteroid
+                              else asteroid{status = Destroyed}    
+--}
+
+    asteroidBullet :: World -> World
+    asteroidBullet w@(World {asteroids = []}) = w
+    asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
+            where
+                check asteroid
+                    | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
+                    | otherwise = asteroid{status = Destroyed}  
+
+
+
+
     --collisionchecks
     --checkcollision1 :: Asteroid -> Bullet -> Bool
     --checkcollision1  Asteroid{ location = (x1,y1)} Bullet{ bulletLocation = (x2,y2)} | x1 == x2 && y1 ==y2 = True

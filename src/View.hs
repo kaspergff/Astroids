@@ -45,7 +45,9 @@ module View where
     drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids
 
     drawAsteroid :: Asteroid -> Picture
-    drawAsteroid Asteroid{ location = (x,y)} = translate x y asteroid
+    drawAsteroid Asteroid{ location = (x,y) , status = s} 
+        | s == NotDestroyed = translate x y asteroid
+        | otherwise = Blank
 
     asteroid :: Picture
     asteroid =  color white $ ThickCircle 5 5

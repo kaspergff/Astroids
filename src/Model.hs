@@ -55,7 +55,7 @@ module Model where
     -- pause the game
     data PauseorPlay = Paused | Playing deriving (Eq)
 
-    data DestroyedOrNot = Destroyed | NotDestroyed 
+    data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
                                
     initial_world :: World
     initial_world = World (Player (0,-180) NoMovement) Playing [] [] 0
