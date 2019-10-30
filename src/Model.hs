@@ -20,6 +20,7 @@ module Model where
                 pause   :: PauseorPlay
                 }
 
+                
     -- player
     data Player = Player {
                 playerlocation  :: (Float,Float),

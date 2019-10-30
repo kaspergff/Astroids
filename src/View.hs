@@ -14,6 +14,7 @@ module View where
       ShowNothing       -> blank
       ShowWorld world   -> drawWorld world
 
+      
 
     -- Main draw function
     drawWorld :: World -> Picture

@@ -9,6 +9,7 @@ module Controller where
     import System.Random
     import System.Environment
     
+    
     -- | Handle one iteration of the game
     step :: Float -> GameState -> IO GameState
     step secs gstate  

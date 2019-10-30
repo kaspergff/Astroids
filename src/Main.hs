@@ -6,6 +6,7 @@ module Main where
     
     import Graphics.Gloss.Interface.IO.Game
     
+    
     main :: IO ()
     main = playIO (InWindow "Astroids" (400, 400) (0, 0)) -- Or FullScreen
                   black            -- Background color
