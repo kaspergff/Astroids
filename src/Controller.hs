@@ -44,7 +44,7 @@ module Controller where
         updatePlane $ 
         planeOnScreen $ 
         updateAsteroids $ 
-        spawnAsteroid w
+        timeToSpawnAsteroid w
 
 
     -- Move plane
@@ -76,11 +76,21 @@ module Controller where
     updateAsteroids w@(World {asteroids = listOfAsteroids}) = w{asteroids = map updateAsteroid listOfAsteroids}
 
     updateAsteroid :: Asteroid -> Asteroid
-    updateAsteroid Asteroid{ location = (x,y)} = Asteroid{ location = (x,y-10)}
+    updateAsteroid Asteroid{ location = (x,y)} = Asteroid{ location = (x,y-2)}
 
     spawnAsteroid :: World -> World
     spawnAsteroid w@(World {asteroids = listOfAsteroids}) = w{asteroids = listOfAsteroids ++ [createAsteroid] }
 
     createAsteroid :: Asteroid
     createAsteroid = Asteroid (100,0)
+
+    timeToSpawnAsteroid :: World -> World
+    timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
+        | time < 1 = spawnAsteroid w{ asteroidTimer = 25}
+        | otherwise = w {asteroidTimer = time - 1}
+
+
+
+
+
 

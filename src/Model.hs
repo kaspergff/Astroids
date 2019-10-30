@@ -19,7 +19,8 @@ module Model where
                 player  :: Player,
                 pause   :: PauseorPlay,
                 bullets     :: [Bullet],
-                asteroids   :: [Asteroid]
+                asteroids   :: [Asteroid],
+                asteroidTimer   :: Int
                 }
 
 
@@ -53,7 +54,7 @@ module Model where
     data PauseorPlay = Paused | Playing deriving (Eq)
                                
     initial_world :: World
-    initial_world = World (Player (0,-180) NoMovement) Playing [] []
+    initial_world = World (Player (0,-180) NoMovement) Playing [] [] 0
                 
     initialState :: GameState
     initialState = GameState (ShowWorld(initial_world)) initial_world 0 
