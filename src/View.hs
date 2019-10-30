@@ -7,7 +7,7 @@ module View where
     import Controller
     
     view :: GameState -> IO Picture
-    view = return . viewPure
+    view = return.viewPure
     
     viewPure :: GameState -> Picture
     viewPure gstate = case infoToShow gstate of
