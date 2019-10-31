@@ -155,17 +155,24 @@ module Controller where
             getOnlyNotDesBul :: [Bullet] -> [Bullet]
             getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
 
-            
-    collisionAsteroidplayer :: Player -> Asteroid -> Bool
-    collisionAsteroidplayer  p@(Player {playerlocation = (bx,by)}) a@( Asteroid {location = (ax,ay), status = s})
-        | ax >= (bx-15) && ax <= (bx+15) && ay >= (by-15) && ay <= (by+15) = True
+     
+    -- collision Asteroid and player        
+    collisionPlayerAsteroid :: Player -> Asteroid -> Bool
+    collisionPlayerAsteroid  p@(Player {playerlocation = (px,py)}) a@( Asteroid {location = (ax,ay)})
+        | ax >= (px-15) && ax <= (px+15) && ay >= (py-15) && ay <= (py+15) = True
         | otherwise = False
+
+    collisionAsteroidPlayer :: Asteroid -> Player -> Bool
+    collisionAsteroidPlayer  a@( Asteroid {location = (ax,ay), status = s}) p@(Player {playerlocation = (px,py)})
+        | ax >= (px-15) && ax <= (px+15) && ay >= (py-15) && ay <= (py+15) = True
+        | otherwise = False    
     
     asteroidPlayer :: World -> World
     asteroidPlayer w@(World {asteroids = []}) = w
-    asteroidPlayer w@(World {asteroids = listOfAsteroids, lives = l ,player = p}) 
-        | all (==False) (map (collisionAsteroidplayer p) listOfAsteroids) == True = w 
-        | otherwise = w{lives = (l -1)}
+    asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p}) = w{asteroids = map check listOfAsteroids}
+            where
+                check asteroid | collisionAsteroidPlayer asteroid p  == False = asteroid
+                               | otherwise = asteroid{status = Destroyed}
         
    
 
