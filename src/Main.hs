@@ -12,10 +12,11 @@ module Main where
     main = do
         esp <- getStdGen
         otg <- getStdGen
+        ofg <- getStdGen
         playIO (InWindow "Astroids" (400, 400) (0, 0)) -- Or FullScreen
                   green            -- Background color
                   30               -- Frames per second
-                  (initialState esp otg)     -- Initial state
+                  (initialState esp otg ofg)     -- Initial state
                   view             -- View function
                   input            -- Event function
                   step             -- Step function

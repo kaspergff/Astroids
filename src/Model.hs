@@ -25,6 +25,7 @@ module Model where
                 asteroidTimer   :: Int,
                 asteroidsSpawnGenerator :: StdGen,
                 oneThreeGenerator :: StdGen,
+                oneFiveGenerator :: StdGen,
                 score         :: Int,
                 lives         ::  Int
                 }
@@ -64,8 +65,8 @@ module Model where
 
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
                                
-    initial_world :: StdGen -> StdGen -> World
-    initial_world esg otg = World (Player (0,-180) NoMovement) Playing [] [] 0 esg otg 0 3
+    initial_world :: StdGen -> StdGen -> StdGen -> World
+    initial_world esg otg ofg = World (Player (0,-180) NoMovement) Playing [] [] 0 esg otg ofg 0 3
                 
-    initialState :: StdGen -> StdGen -> GameState
-    initialState esg otg = GameState (ShowWorld(initial_world esg otg)) (initial_world esg otg) 0 
+    initialState :: StdGen -> StdGen -> StdGen -> GameState
+    initialState esg otg ofg = GameState (ShowWorld(initial_world esg otg ofg)) (initial_world esg otg ofg) 0 
