@@ -15,8 +15,8 @@ module Main where
         ofg <- getStdGen
         playIO (InWindow "Astroids" (400, 400) (0, 0)) -- Or FullScreen
                   black            -- Background color
-                  60               -- Frames per second
-                  (initialState esp otg)     -- Initial state
+                  60              -- Frames per second
+                  (initialState esp otg ofg)     -- Initial state
                   view             -- View function
                   input            -- Event function
                   step             -- Step function

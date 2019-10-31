@@ -62,7 +62,8 @@ module Controller where
         timeToSpawnAsteroid $
         asteroidBullet $
         bulletAsteroid $
-        destroybullets $
+        destroy_out_of_view_asteroids $
+        destroy_out_of_view_bullets $
         removeDestroidObjects w
 
     --stop game if dead
@@ -229,8 +230,6 @@ module Controller where
                 check asteroid | collisionAsteroidPlayer asteroid p  == False = asteroid
                                | otherwise = asteroid{status = Destroyed}
         
- 
-
     playerAsteroid :: World -> World
     playerAsteroid w@(World {asteroids = []}) = w
     playerAsteroid w@(World {asteroids = listOfAsteroids, lives = l ,player = p}) 
@@ -245,12 +244,20 @@ module Controller where
                     check sc bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = sc
                                     | otherwise = (sc + 1)
     --destroy out of bounds
-    destroybullets :: World -> World
-    destroybullets w@(World {bullets = []}) = w
-    destroybullets w@(World {bullets = listOfBullets}) = w{bullets = (map check listOfBullets)}
+    destroy_out_of_view_bullets :: World -> World
+    destroy_out_of_view_bullets w@(World {bullets = []}) = w
+    destroy_out_of_view_bullets w@(World {bullets = listOfBullets}) = w{bullets = (map check listOfBullets)}
                     where 
                         check :: Bullet -> Bullet
                         check b@(Bullet {bulletLocation = (_,y)}) | y > 200 = b{bulletStatus = Destroyed}
                                                                   | otherwise = b 
+
+    destroy_out_of_view_asteroids :: World -> World
+    destroy_out_of_view_asteroids w@(World {asteroids = []}) = w
+    destroy_out_of_view_asteroids w@(World {asteroids = listOfAsteroids}) = w{ asteroids = map check listOfAsteroids}
+                    where
+                        check :: Asteroid -> Asteroid
+                        check a@(Asteroid {location = (_,y), size = si}) | y < (-200-6*si) = a{status = Destroyed}
+                                                                         | otherwise = a
    
   
