@@ -149,13 +149,9 @@ module Controller where
                 where 
                     check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
                                  | otherwise = bullet{bulletStatus = Destroyed}
-    {--
-    bulletAsteroid' :: World -> World
-    bulletAsteroid' w@(World {asteroids = []}) = w
-    bulletAsteroid' w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, score = s})
-        | all (==False) (map (map (collisionBulletAsteroid) listOfBullets) listOfAsteroids) == True = w 
-        | otherwise = w{score = (s + 1)}
-    --}
+    
+   
+    
     --player and asteroid
 
     removeDestroidObjects :: World -> World
@@ -197,11 +193,12 @@ module Controller where
         | otherwise = w{lives = (l -1)}
 
     --calcscore
-
     scoreChecker :: World -> World
-    scoreChecker w@(World {asteroids = asteroidList, score = s}) = w{ score = length (filter (==Destroyed) (statelist asteroidList))}
+    scoreChecker w@(World {bullets = []}) = w
+    scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, score = s}) = w{score = maximum (map (check s) listOfBullets)}
                 where 
-                    statelist :: [Asteroid] -> [DestroyedOrNot]
-                    statelist x = [ s |  (Asteroid { location = l, status = s}) <- x ]
+                    check sc bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = sc
+                                    | otherwise = (sc + 1)
 
-    
+   
+  
