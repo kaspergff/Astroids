@@ -62,8 +62,7 @@ module Controller where
         timeToSpawnAsteroid $
         asteroidBullet $
         bulletAsteroid $
-        destroy_out_of_view_asteroids $
-        destroy_out_of_view_bullets $
+        destroy_out_of_view_objects $
         removeDestroidObjects w
 
     --stop game if dead
@@ -244,20 +243,21 @@ module Controller where
                     check sc bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = sc
                                     | otherwise = (sc + 1)
     --destroy out of bounds
-    destroy_out_of_view_bullets :: World -> World
-    destroy_out_of_view_bullets w@(World {bullets = []}) = w
-    destroy_out_of_view_bullets w@(World {bullets = listOfBullets}) = w{bullets = (map check listOfBullets)}
-                    where 
-                        check :: Bullet -> Bullet
-                        check b@(Bullet {bulletLocation = (_,y)}) | y > 200 = b{bulletStatus = Destroyed}
-                                                                  | otherwise = b 
 
-    destroy_out_of_view_asteroids :: World -> World
-    destroy_out_of_view_asteroids w@(World {asteroids = []}) = w
-    destroy_out_of_view_asteroids w@(World {asteroids = listOfAsteroids}) = w{ asteroids = map check listOfAsteroids}
-                    where
-                        check :: Asteroid -> Asteroid
-                        check a@(Asteroid {location = (_,y), size = si}) | y < (-200-6*si) = a{status = Destroyed}
-                                                                         | otherwise = a
-   
+    destroy_out_of_view_objects :: World -> World
+    destroy_out_of_view_objects w = w{ bullets = (destroy_out_of_view_bullets w), asteroids = (destroy_out_of_view_asteroids w)}
+        where 
+            destroy_out_of_view_bullets :: World -> [Bullet]
+            destroy_out_of_view_bullets w@(World {bullets = []}) = []
+            destroy_out_of_view_bullets w@(World {bullets = listOfBullets'}) = map check listOfBullets'
+            check :: Bullet -> Bullet
+            check b@(Bullet {bulletLocation = (_,y)}) | y > 200 = b{bulletStatus = Destroyed}
+                                                      | otherwise = b 
+            destroy_out_of_view_asteroids :: World -> [Asteroid]
+            destroy_out_of_view_asteroids w@(World {asteroids = []}) = []
+            destroy_out_of_view_asteroids w@(World {asteroids = listOfAsteroids'}) = map check1 listOfAsteroids'
+            check1 :: Asteroid -> Asteroid
+            check1 a@(Asteroid {location = (_,y), size = si}) | y < (-200-6*si) = a{status = Destroyed}
+                                                              | otherwise = a
+        
   
