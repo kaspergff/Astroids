@@ -58,7 +58,7 @@ module Model where
 
 
     -- movement player
-    data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)
+    data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement | UpleftMovement | UprightMovement | DownleftMovement| DownrightMovement deriving (Eq)
 
     -- pause the game
     data PauseorPlay = Paused | Playing deriving (Eq)

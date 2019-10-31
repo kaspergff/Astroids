@@ -20,12 +20,29 @@ module Controller where
     input :: Event -> GameState -> IO GameState
     input e gstate = return (inputKey e gstate)
 
-    -- Key input
-    inputKey :: Event -> GameState -> GameState                                             
+
+ -- Key input
+ -- single key
+    inputKey :: Event -> GameState -> GameState  
+    {-
+    inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _)  gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpleftMovement}}}
+    inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _)  gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownleftMovement}}}
+    inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UprightMovement}}}
+    inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownrightMovement}}}
+    -}
+    {-
     inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = LeftMovement}}}
     inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = RightMovement}}}
     inputKey (EventKey (SpecialKey (KeyUp)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
     inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
+    -}
+    inputKey (EventKey (Char ('w')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
+    inputKey (EventKey (Char ('a')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = LeftMovement}}}
+    inputKey (EventKey (Char ('s')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}
+    inputKey (EventKey (Char ('d')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = RightMovement}}}
+    inputKey (EventKey (Char ('e')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UprightMovement}}}
+    inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpleftMovement}}}
+
     --bullet
     inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = (spawnBullet w)}
     inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
@@ -45,6 +62,7 @@ module Controller where
         timeToSpawnAsteroid $
         asteroidBullet $
         bulletAsteroid $
+        destroybullets $
         removeDestroidObjects w
 
     --stop game if dead
@@ -60,6 +78,8 @@ module Controller where
         | dir == LeftMovement = w{ player = p {playerlocation = (x - 11,y), movement = LeftMovement}}
         | dir == DownMovement = w{ player = p {playerlocation = (x,y - 11), movement = DownMovement}}
         | dir == UpMovement = w{ player = p {playerlocation = (x,y + 11), movement = UpMovement}}
+        | dir == UpleftMovement = w{ player = p {playerlocation = (x - 5.5 , y + 5.5), movement = UpleftMovement}}
+        | dir == UprightMovement = w{ player = p {playerlocation = (x + 5.5, y + 5.5), movement = UprightMovement}}
         | dir == NoMovement = w
 
     -- Keep plane on screen
@@ -156,8 +176,6 @@ module Controller where
                     check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
                                  | otherwise = bullet{bulletStatus = Destroyed}
     
-   
-    
     --player and asteroid
 
     removeDestroidObjects :: World -> World
@@ -205,6 +223,13 @@ module Controller where
                 where 
                     check sc bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = sc
                                     | otherwise = (sc + 1)
-
+    --destroy out of bounds
+    destroybullets :: World -> World
+    destroybullets w@(World {bullets = []}) = w
+    destroybullets w@(World {bullets = listOfBullets}) = w{bullets = (map check listOfBullets)}
+                    where 
+                        check :: Bullet -> Bullet
+                        check b@(Bullet {bulletLocation = (_,y)}) | y > 200 = b{bulletStatus = Destroyed}
+                                                                  | otherwise = b 
    
   
