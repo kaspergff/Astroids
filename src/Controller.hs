@@ -40,7 +40,6 @@ module Controller where
         asteroidPlayer $
         planeOnScreen $ 
         updateBullets $
-        scoreChecker $
         updateAsteroids $ 
         timeToSpawnAsteroid $
         asteroidBullet $
@@ -80,6 +79,7 @@ module Controller where
 
     spawnAsteroid :: World -> World
     spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g }) = w{asteroids = listOfAsteroids ++ [createAsteroid (setRanNum g) 3],
+    --pls typesignature
     asteroidsSpawnGenerator = getGen (genereerRanNum g) }
 
     createAsteroid :: Float -> Float -> Asteroid
@@ -138,7 +138,7 @@ module Controller where
                                
     bulletAsteroid :: World -> World
     bulletAsteroid w@(World {bullets = []}) = w
-    bulletAsteroid w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{bullets = map check listOfBullets}
+    bulletAsteroid w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, score = s}) = w{bullets = map check listOfBullets}
                 where 
                     check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
                                  | otherwise = bullet{bulletStatus = Destroyed}
@@ -165,16 +165,13 @@ module Controller where
     asteroidPlayer w@(World {asteroids = []}) = w
     asteroidPlayer w@(World {asteroids = listOfAsteroids, lives = l ,player = p}) 
         | all (==False) (map (collisionAsteroidplayer p) listOfAsteroids) == True = w 
-        | otherwise = w{lives = (l -1)}
+        | otherwise = w{lives = (l -1), asteroids = (testlist listOfAsteroids p)}
+            where 
+                testlist :: [Asteroid] -> Player -> [Asteroid]
+                testlist l' p'= filter (==True) (map (collisionAsteroidplayer p') l')
         
    
 
-    --calcscore
 
-    scoreChecker :: World -> World
-    scoreChecker w@(World {asteroids = asteroidList, score = s}) = w{ score = length (filter (==Destroyed) (statelist asteroidList))}
-                where 
-                    statelist :: [Asteroid] -> [DestroyedOrNot]
-                    statelist x = [ s |  (Asteroid { location = l, status = s}) <- x ]
 
     

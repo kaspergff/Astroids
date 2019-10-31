@@ -53,7 +53,7 @@ module View where
     asteroid a =  color white $ Line [(0*a,0*a), (5*a,4*a), (6*a,7*a), (4*a,9*a), (-3*a, 12*a), (-8*a,7*a),(-6*a,3*a),(0*a,0*a)]
 
     drawScore :: World -> [Picture]
-    drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 200 400 (Text (show s))))]
+    drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 500 800 (Text (show s))))]
 
     drawlives :: World -> [Picture]
-    drawlives w@(World {lives = l}) = [(scale 0.2 0.2 (translate 200 400 (Text (show l))))]
+    drawlives w@(World {lives = l}) = [(scale 0.2 0.2 (translate 700 800 (Text (show l))))]
