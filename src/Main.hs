@@ -9,10 +9,10 @@ module Main where
     
 
     main :: IO () 
-    main = do
-        esp <- getStdGen
-        otg <- getStdGen
+    main = do        
         ofg <- getStdGen
+        otg <- getStdGen
+        esp <- getStdGen
         playIO (InWindow "Astroids" (400, 400) (0, 0)) -- Or FullScreen
                   black            -- Background color
                   60              -- Frames per second
