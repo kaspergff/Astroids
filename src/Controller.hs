@@ -75,14 +75,15 @@ module Controller where
     updateAsteroids w@(World {asteroids = listOfAsteroids}) = w{asteroids = map updateAsteroid listOfAsteroids}
 
     updateAsteroid :: Asteroid -> Asteroid
-    updateAsteroid a@(Asteroid{ location = (x,y)}) = a{ location = (x,y-2)}
+    updateAsteroid a@(Asteroid{ location = (x,y), aSpeed = s}) = a{ location = (x,y-s)}
 
     spawnAsteroid :: World -> World
-    spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g }) = w{asteroids = listOfAsteroids ++ [createAsteroid (setRanNum g) 3],
-    asteroidsSpawnGenerator = getGen (genereerRanNum g) }
+    spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g, oneThreeGenerator = otg }) = w{asteroids = listOfAsteroids ++ [createAsteroid (setRanNum g) (setRanNumOneThree otg) (setRanNumOneThree otg)],
+    asteroidsSpawnGenerator = getGen (genereerRanNum g),
+    oneThreeGenerator = getGen (genereerRanNumOneThree otg) }
 
-    createAsteroid :: Float -> Float -> Asteroid
-    createAsteroid x s = Asteroid (x,200) s NotDestroyed
+    createAsteroid :: Float -> Float -> Float -> Asteroid
+    createAsteroid x size speed = Asteroid (x,200) size NotDestroyed speed
 
     timeToSpawnAsteroid :: World -> World
     timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
@@ -101,6 +102,13 @@ module Controller where
     
     setRanNum :: StdGen -> Float
     setRanNum g = getRanNum (genereerRanNum g)
+
+    -- random nummer 1 - 3
+    genereerRanNumOneThree :: StdGen -> (Float, StdGen)
+    genereerRanNumOneThree g = randomR (1, 3) g
+    
+    setRanNumOneThree :: StdGen -> Float
+    setRanNumOneThree g = getRanNum (genereerRanNumOneThree g)
     
     updateBullets :: World -> World
     updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
