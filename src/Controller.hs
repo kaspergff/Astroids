@@ -20,7 +20,6 @@ module Controller where
     input :: Event -> GameState -> IO GameState
     input e gstate = return (inputKey e gstate)
 
-
     -- Key input
     inputKey :: Event -> GameState -> GameState                                             
     inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = LeftMovement}}}
@@ -29,7 +28,6 @@ module Controller where
     inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
     --bullet
     inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = (spawnBullet w)}
-    
     inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
     inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
     inputKey _ gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = NoMovement}}}
@@ -38,6 +36,7 @@ module Controller where
     updateWorld w = 
         updatePlane $ 
         asteroidPlayer $
+        playerAsteroid $
         planeOnScreen $ 
         updateBullets $
         scoreChecker $
@@ -142,6 +141,13 @@ module Controller where
                 where 
                     check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
                                  | otherwise = bullet{bulletStatus = Destroyed}
+    {--
+    bulletAsteroid' :: World -> World
+    bulletAsteroid' w@(World {asteroids = []}) = w
+    bulletAsteroid' w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, score = s})
+        | all (==False) (map (map (collisionBulletAsteroid) listOfBullets) listOfAsteroids) == True = w 
+        | otherwise = w{score = (s + 1)}
+    --}
     --player and asteroid
 
     removeDestroidObjects :: World -> World
@@ -174,7 +180,13 @@ module Controller where
                 check asteroid | collisionAsteroidPlayer asteroid p  == False = asteroid
                                | otherwise = asteroid{status = Destroyed}
         
-   
+ 
+
+    playerAsteroid :: World -> World
+    playerAsteroid w@(World {asteroids = []}) = w
+    playerAsteroid w@(World {asteroids = listOfAsteroids, lives = l ,player = p}) 
+        | all (==False) (map (collisionPlayerAsteroid p) listOfAsteroids) == True = w 
+        | otherwise = w{lives = (l -1)}
 
     --calcscore
 
