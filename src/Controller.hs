@@ -104,9 +104,10 @@ module Controller where
     updateAsteroid a@(Asteroid{ location = (x,y), aSpeed = s}) = a{ location = (x,y-s)}
 
     spawnAsteroid :: World -> World
-    spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g, oneThreeGenerator = otg }) = w{asteroids = listOfAsteroids ++ [createAsteroid (setRanNum g) (setRanNumOneThree otg) (setRanNumOneThree otg)],
+    spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g, oneThreeGenerator = otg, oneFiveGenerator = ofg }) = w{asteroids = listOfAsteroids ++ [createAsteroid (setRanNum g) (setRanNumOneThree otg) (setRanNumOneFive ofg)],
     asteroidsSpawnGenerator = getGen (genereerRanNum g),
-    oneThreeGenerator = getGen (genereerRanNumOneThree otg) }
+    oneThreeGenerator = getGenOneThree (genereerRanNumOneThree otg),
+    oneFiveGenerator = getGenOneFive (genereerRanNumOneFive ofg)  }
 
     createAsteroid :: Float -> Float -> Float -> Asteroid
     createAsteroid x size speed = Asteroid (x,200) size NotDestroyed speed
@@ -118,7 +119,7 @@ module Controller where
 
      -- random nummer generatie   
     genereerRanNum :: StdGen -> (Float, StdGen)
-    genereerRanNum g = randomR ((-175), 175) g
+    genereerRanNum g = randomR ((-200), 200) g
 
     getRanNum :: (Float, StdGen) -> Float
     getRanNum (x, _) = x
@@ -133,8 +134,28 @@ module Controller where
     genereerRanNumOneThree :: StdGen -> (Float, StdGen)
     genereerRanNumOneThree g = randomR (1, 3) g
     
+    getRanNumOneThree :: (Float, StdGen) -> Float
+    getRanNumOneThree (x, _) = x
+
+    getGenOneThree :: (Float, StdGen) -> StdGen
+    getGenOneThree (_, g) = g
+
     setRanNumOneThree :: StdGen -> Float
-    setRanNumOneThree g = getRanNum (genereerRanNumOneThree g)
+    setRanNumOneThree g = getRanNumOneThree (genereerRanNumOneThree g)
+
+    -- random nummer 1 - 5
+
+    genereerRanNumOneFive :: StdGen -> (Float, StdGen)
+    genereerRanNumOneFive g = randomR (1, 5) g
+    
+    getRanNumOneFive :: (Float, StdGen) -> Float
+    getRanNumOneFive (x, _) = x
+
+    getGenOneFive :: (Float, StdGen) -> StdGen
+    getGenOneFive (_, g) = g
+
+    setRanNumOneFive :: StdGen -> Float
+    setRanNumOneFive g = getRanNumOneFive (genereerRanNumOneFive g)
     
     updateBullets :: World -> World
     updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}

@@ -12,6 +12,7 @@ module Main where
     main = do
         esp <- getStdGen
         otg <- getStdGen
+        ofg <- getStdGen
         playIO (InWindow "Astroids" (400, 400) (0, 0)) -- Or FullScreen
                   black            -- Background color
                   60               -- Frames per second
