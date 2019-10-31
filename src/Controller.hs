@@ -35,6 +35,7 @@ module Controller where
     updateWorld :: World -> World
     updateWorld w = 
         updatePlane $ 
+        checklive $
         asteroidPlayer $
         playerAsteroid $
         planeOnScreen $ 
@@ -45,6 +46,11 @@ module Controller where
         asteroidBullet $
         bulletAsteroid $
         removeDestroidObjects w
+
+    --stop game if dead
+    checklive :: World -> World
+    checklive w@(World {lives = l}) | l <= 0 = w{pause = Paused}
+                                    | otherwise = w
 
     -- Move plane
     updatePlane :: World -> World
@@ -126,14 +132,14 @@ module Controller where
     --asteroid and bullet
 
     collisionAsteroidBullet :: Asteroid -> Bullet -> Bool
-    collisionAsteroidBullet a@(Asteroid {location = (ax,ay), status = s}) b@(Bullet {bulletLocation= (bx,by)})
-        | ax >= (bx-15) && ax <= (bx+15) && ay >= (by-15) && ay <= (by+15) = True
+    collisionAsteroidBullet a@(Asteroid {location = (ax,ay), status = s, size = si}) b@(Bullet {bulletLocation= (bx,by)})
+        | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
         | otherwise = False
 
 
     collisionBulletAsteroid :: Bullet -> Asteroid -> Bool
-    collisionBulletAsteroid b@(Bullet {bulletLocation= (bx,by)}) a@(Asteroid {location = (ax,ay), status = s})
-        | ax >= (bx-15) && ax <= (bx+15) && ay >= (by-15) && ay <= (by+15) = True
+    collisionBulletAsteroid b@(Bullet {bulletLocation= (bx,by)}) a@(Asteroid {location = (ax,ay), status = s, size = si})
+        | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
         | otherwise = False    
 
     asteroidBullet :: World -> World

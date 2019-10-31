@@ -6,6 +6,7 @@ module Model where
 
     data InfoToShow = ShowNothing
                     | ShowWorld World
+                    | ShowScore World
     
     nO_SECS_BETWEEN_CYCLES :: Float
     nO_SECS_BETWEEN_CYCLES = 5
