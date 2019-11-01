@@ -29,7 +29,8 @@ module Model where
                 oneThreeGenerator :: StdGen,
                 oneFiveGenerator :: StdGen,
                 score         :: Int,
-                lives         ::  Int
+                lives         ::  Int,
+                livespr       :: Picture
                 }
 
 
@@ -70,8 +71,8 @@ module Model where
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
     
     -- moest pla toevoegen om te laten werken is mis inpure
-    initial_world :: StdGen -> StdGen -> StdGen -> Picture -> World
-    initial_world esg otg ofg pla = World (Player (0,-180) NoMovement pla) Playing [] [] 0 esg otg ofg 0 3
+    initial_world :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> World
+    initial_world esg otg ofg pla liv = World (Player (0,-180) NoMovement pla) Playing [] [] 0 esg otg ofg 0 3 liv
                 
-    initialState :: StdGen -> StdGen -> StdGen -> Picture -> GameState
-    initialState esg otg ofg pla = GameState (ShowWorld(initial_world esg otg ofg pla)) (initial_world esg otg ofg pla) 0 
+    initialState :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> GameState
+    initialState esg otg ofg pla liv = GameState (ShowWorld(initial_world esg otg ofg pla liv)) (initial_world esg otg ofg pla liv) 0 

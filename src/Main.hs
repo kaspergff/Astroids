@@ -12,13 +12,14 @@ module Main where
     main :: IO () 
     main = do       
         planeafb <- loadBMP "sprites als bitmap/plane.bmp" --load bitmap
+        liveafb <- loadBMP "sprites als bitmap/plane.bmp"
         ofg <- getStdGen
         otg <- getStdGen
         esp <- getStdGen
         playIO (InWindow "Astroids" (400, 400) (0, 0)) -- Or FullScreen
                   black            -- Background color
                   60              -- Frames per second
-                  (initialState esp otg ofg planeafb)     -- Initial state 
+                  (initialState esp otg ofg planeafb liveafb)     -- Initial state 
                   view             -- View function
                   input            -- Event function
                   step             -- Step function

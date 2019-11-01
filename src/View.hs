@@ -21,7 +21,7 @@ module View where
     drawWorld :: World -> Picture
     drawWorld w = Pictures
         (drawAsteroids w ++
-        drawbullets w ++ [drawPlane w] ++ drawScore w ++ drawlives w 
+        drawbullets w ++ [drawPlane w] ++ drawScore w 
         )
 
     drawPlane :: World -> Picture
@@ -48,9 +48,13 @@ module View where
 
     drawScore :: World -> [Picture]
     drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 500 800 (color white $ Text (show s))))]
-
-    drawlives :: World -> [Picture]
-    drawlives w@(World {lives = l}) = [(scale 0.2 0.2 (translate 700 800 (color white $ Text (show l))))]
+{-
+    drawlives :: Float -> Float -> World -> [Picture]
+    drawlives _ _ w@(World {lives = 0}) = []
+    drawlives x y w@(World {lives = i, livespr = s}) = (drawlive x y s) : (drawlives (x+30) y (World {lives = i, livespr = s})) 
+-}
+    drawlive :: Float -> Float -> Picture -> Picture
+    drawlive x y s = translate x y (scale 0.125 0.125 s)
 
   --score draw functions (for the death screen)
     drawScorescreen :: World -> Picture

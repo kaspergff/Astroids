@@ -1,1 +1,4 @@
+--images where converted to bmp with https://convertio.co/nl/jpg-bmp/
+
 plane -> https://www.pngfans.com/download-6fbc096a384a95bc-airplane-sprite.html
+heart -> https://www.pngfans.com/middle-b4a77c365a92364d-heart.html

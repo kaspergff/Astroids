@@ -20,7 +20,6 @@ module Controller where
     input :: Event -> GameState -> IO GameState
     input e gstate = return (inputKey e gstate)
 
-
  -- Key input
  
     inputKey :: Event -> GameState -> GameState  
