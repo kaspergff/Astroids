@@ -3,6 +3,7 @@
 module Model where
 
     import System.Random
+    import Graphics.Gloss
 
     data InfoToShow = ShowNothing
                     | ShowWorld World
@@ -35,7 +36,9 @@ module Model where
     -- player
     data Player = Player {
                 playerlocation  :: (Float,Float),
-                movement        :: Movement
+                movement        :: Movement,
+                -- moest toevoegen om te laten werken is mis inpure
+                sprite          :: Picture 
                 }
 
     -- bullets
@@ -65,9 +68,10 @@ module Model where
     data PauseorPlay = Paused | Playing deriving (Eq)
 
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
-                               
-    initial_world :: StdGen -> StdGen -> StdGen -> World
-    initial_world esg otg ofg = World (Player (0,-180) NoMovement) Playing [] [] 0 esg otg ofg 0 3
+    
+    -- moest pla toevoegen om te laten werken is mis inpure
+    initial_world :: StdGen -> StdGen -> StdGen -> Picture -> World
+    initial_world esg otg ofg pla = World (Player (0,-180) NoMovement pla) Playing [] [] 0 esg otg ofg 0 3
                 
-    initialState :: StdGen -> StdGen -> StdGen -> GameState
-    initialState esg otg ofg = GameState (ShowWorld(initial_world esg otg ofg)) (initial_world esg otg ofg) 0 
+    initialState :: StdGen -> StdGen -> StdGen -> Picture -> GameState
+    initialState esg otg ofg pla = GameState (ShowWorld(initial_world esg otg ofg pla)) (initial_world esg otg ofg pla) 0 

@@ -22,8 +22,9 @@ module Controller where
 
 
  -- Key input
- -- single key
+ 
     inputKey :: Event -> GameState -> GameState  
+    --laat staan tot nader order
     {-
     inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _)  gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpleftMovement}}}
     inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _)  gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownleftMovement}}}
@@ -197,15 +198,17 @@ module Controller where
             getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
 
      
-    -- collision Asteroid and player        
+    -- collision Asteroid and player
+    -- hitboxen passen niet best bij player model nu!!
+    -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
     collisionPlayerAsteroid :: Player -> Asteroid -> Bool
     collisionPlayerAsteroid  p@(Player {playerlocation = (px,py)}) a@( Asteroid {location = (ax,ay)})
-        | ax >= (px-15) && ax <= (px+15) && ay >= (py-15) && ay <= (py+15) = True
+        | ax >= (px-32) && ax <= (px+32) && ay >= (py-32) && ay <= (py+32) = True
         | otherwise = False
 
     collisionAsteroidPlayer :: Asteroid -> Player -> Bool
     collisionAsteroidPlayer  a@( Asteroid {location = (ax,ay), status = s}) p@(Player {playerlocation = (px,py)})
-        | ax >= (px-15) && ax <= (px+15) && ay >= (py-15) && ay <= (py+15) = True
+        | ax >= (px-32) && ax <= (px+32) && ay >= (py-32) && ay <= (py+32) = True
         | otherwise = False    
     
     asteroidPlayer :: World -> World

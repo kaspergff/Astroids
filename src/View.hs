@@ -19,28 +19,21 @@ module View where
 
     -- Main draw function
     drawWorld :: World -> Picture
-    drawWorld w@(World {player = p@(Player {playerlocation = (x,y)})}) = Pictures
+    drawWorld w = Pictures
         (drawAsteroids w ++
-        [translate x y drawPlane] ++ drawbullets w ++ drawScore w ++ drawlives w 
+        drawbullets w ++ [drawPlane w] ++ drawScore w ++ drawlives w 
         )
 
-    drawPlane :: Picture
-    drawPlane = Pictures[plane, planeNose]
-
-    plane :: Picture
-    plane = color white (Polygon [(-2, 10), (2, 10), (2, -15), (-2, -15), (-2, 10)])
-
-    planeNose :: Picture
-    planeNose = color yellow (Polygon [(-2, 15), (0,20), (2, 15), (2, 8), (-2, 8), (-2, 10)])
-
-
+    drawPlane :: World -> Picture
+    --origineel 512x512 dus nu ong 64 bij 64
+    drawPlane w@(World {player = p@(Player {playerlocation = (x,y), sprite = s})}) = (translate x y (scale 0.125 0.125 s))
+    
     drawbullets :: World -> [Picture]
     drawbullets w@(World {bullets = listOfBullets}) = map drawbullet listOfBullets
     
     drawbullet :: Bullet -> Picture
     drawbullet Bullet { bulletLocation = (x,y), bulletStatus = s} = translate x y bullet
                                                           
-    
     bullet :: Picture
     bullet = color red $ ThickCircle 1 2
 
@@ -62,5 +55,6 @@ module View where
   --score draw functions (for the death screen)
     drawScorescreen :: World -> Picture
     drawScorescreen = undefined
+
 
     
