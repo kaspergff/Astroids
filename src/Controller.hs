@@ -45,7 +45,7 @@ module Controller where
     inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpleftMovement}}}
 
     --bullet
-    inputKey (EventKey (Char ('m')) Down _ _)gstate@(GameState _ w@(World {rockets = l}) _) = gstate {world = (spawnRocket w)}
+    inputKey (EventKey (Char ('m')) _ _ _) gstate@(GameState _ w@(World {rockets = l}) _) = gstate {world = (spawnRocket w)}
     inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = (spawnBullet w)}
     inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
     inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
@@ -246,7 +246,6 @@ module Controller where
             getOnlyNotDesRock :: [Rocket] -> [Rocket]
             getOnlyNotDesRock list = [c | c@(Rocket {rocketStatus = NotDestroyed}) <- list]
 
-     
     -- collision Asteroid and player
     -- hitboxen passen niet best bij player model nu!!
     -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
@@ -272,7 +271,10 @@ module Controller where
     --destroy out of bounds
 
     destroy_out_of_view_objects :: World -> World
-    destroy_out_of_view_objects w = w{ bullets = (destroy_out_of_view_bullets w), asteroids = (destroy_out_of_view_asteroids w) , rockets = (destroy_out_of_view_rockets w)}
+    destroy_out_of_view_objects w = w{ 
+        bullets = (destroy_out_of_view_bullets w), 
+        asteroids = (destroy_out_of_view_asteroids w) , 
+        rockets = (destroy_out_of_view_rockets w)}
         where 
             destroy_out_of_view_bullets :: World -> [Bullet]
             destroy_out_of_view_bullets w@(World {bullets = []}) = []
