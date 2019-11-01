@@ -23,6 +23,7 @@ module Model where
                 player  :: Player,
                 pause   :: PauseorPlay,
                 bullets     :: [Bullet],
+                rockets     :: [Rocket],
                 asteroids   :: [Asteroid],
                 asteroidTimer   :: Int,
                 asteroidsSpawnGenerator :: StdGen,
@@ -53,6 +54,13 @@ module Model where
 
                }
 
+    data Rocket = Rocket {
+                rockLocation :: (Float, Float),            
+                --bmovement :: Movement
+                rspeed :: Float,
+                rocketStatus :: DestroyedOrNot
+                }
+
     data Asteroid = Asteroid {
                     location		:: (Float,Float),
                     --direction_angle :: Float,
@@ -74,7 +82,7 @@ module Model where
     
     -- moest pla toevoegen om te laten werken is mis inpure
     initial_world :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> World
-    initial_world esg otg ofg pla liv = World (Player (0,-180) NoMovement pla Alive) Playing [] [] 0 esg otg ofg 0 3 liv
+    initial_world esg otg ofg pla liv = World (Player (0,-180) NoMovement pla Alive) Playing [] [] [] 0 esg otg ofg 0 3 liv
                 
     initialState :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> GameState
     initialState esg otg ofg pla liv = GameState (ShowWorld(initial_world esg otg ofg pla liv)) (initial_world esg otg ofg pla liv) 0 

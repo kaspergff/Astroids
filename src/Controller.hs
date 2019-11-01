@@ -13,7 +13,7 @@ module Controller where
     -- | Handle one iteration of the game
     step :: Float -> GameState -> IO GameState
     step secs gstate  
-        | (isdead $ player $ world gstate) == Dead = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow =  ShowDeathscreen(updateWorld $ world gstate), world = updateWorld $ world gstate}
+        | (isdead $ player $ world gstate) == Dead = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
         | (isPaused $ world gstate) == True = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
         | otherwise = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
     
@@ -45,6 +45,7 @@ module Controller where
     inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpleftMovement}}}
 
     --bullet
+    inputKey (EventKey (Char ('m')) Down _ _)gstate@(GameState _ w@(World {rockets = l}) _) = gstate {world = (spawnRocket w)}
     inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = (spawnBullet w)}
     inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
     inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
@@ -55,14 +56,16 @@ module Controller where
         updatePlane $ 
         checklive $
         asteroidPlayer $
-        playerAsteroid $
         planeOnScreen $ 
+        updateRockets $
         updateBullets $
         scoreChecker $
         updateAsteroids $ 
         timeToSpawnAsteroid $
         asteroidBullet $
         bulletAsteroid $
+        asteroidRocket $
+        rocketAsteroid $
         destroy_out_of_view_objects $
         removeDestroidObjects w
 
@@ -86,16 +89,31 @@ module Controller where
     -- Keep plane on screen
     planeOnScreen :: World -> World
     planeOnScreen w@(World {player = p@(Player {playerlocation = (x,y)})})
-        | x < (-200) = w{ player = p {playerlocation = (-200,y)}}
-        | x > (200) = w{ player = p {playerlocation = (200,y)}}
-        | y < (-190) = w{ player = p {playerlocation = (x,-190)}}
-        | y > (170) = w{ player = p {playerlocation = (x,170)}}
+        | x <= (-200) = w{ player = p {playerlocation = (-200,y)}}
+        | x >= (200) = w{ player = p {playerlocation = (200,y)}}
+        | y <= (-190) = w{ player = p {playerlocation = (x,-190)}}
+        | y >= (170) = w{ player = p {playerlocation = (x,170)}}
         | otherwise = w 
 
     isPaused :: World -> Bool
     isPaused w@(World {pause = paused})
         | paused == Playing = False
         | paused == Paused = True    
+
+
+    -- rockets bitches
+
+    updateRockets :: World -> World
+    updateRockets w@(World {rockets = listOfRockets}) = w{rockets = map updateRocket listOfRockets}
+
+    updateRocket :: Rocket -> Rocket
+    updateRocket r@(Rocket{ rockLocation = (x,y), rspeed = s}) = r{ rockLocation = (x,(y+s)), rspeed = s}
+
+    spawnRocket :: World -> World
+    spawnRocket w@(World {player = p@(Player {playerlocation = (x,y)}), rockets = listOfRockets}) = w{rockets = listOfRockets ++ [(createRocket ((x-10),y))] ++ [(createRocket ((x+10),y))]  }
+
+    createRocket :: (Float,Float) -> Rocket
+    createRocket (x,y) = Rocket (x,y) 15 NotDestroyed
 
     -- Update all asteroids    
     updateAsteroids :: World -> World
@@ -144,6 +162,8 @@ module Controller where
     setRanNumOneFive :: StdGen -> Float
     setRanNumOneFive g = getRanNum (genereerRanNumOneFive g)
     
+    -- bullets
+
     updateBullets :: World -> World
     updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
@@ -184,46 +204,64 @@ module Controller where
                     check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
                                  | otherwise = bullet{bulletStatus = Destroyed}
     
+    --asteroid and rocket
+    collisionAsteroidRocket :: Asteroid -> Rocket -> Bool
+    collisionAsteroidRocket a@(Asteroid {location = (ax,ay), status = s, size = si}) b@(Rocket {rockLocation = (bx,by)}) 
+        | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
+        | otherwise = False
+
+    collisionRocketAsteroid :: Rocket -> Asteroid -> Bool
+    collisionRocketAsteroid b@(Rocket {rockLocation= (bx,by)}) a@(Asteroid {location = (ax,ay), status = s, size = si})
+        | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
+        | otherwise = False    
+
+    asteroidRocket :: World -> World
+    asteroidRocket w@(World {asteroids = []}) = w
+    asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{asteroids = map check listOfAsteroids}
+            where
+                check asteroid | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
+                               | otherwise = asteroid{status = Destroyed}
+                               
+    rocketAsteroid :: World -> World
+    rocketAsteroid w@(World {rockets = []}) = w
+    rocketAsteroid w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{rockets = map check listOfRockets}
+                where 
+                    check rocket | all (==False) (map (collisionRocketAsteroid rocket) listOfAsteroids) == True = rocket
+                                 | otherwise = rocket{rocketStatus = Destroyed}
+
+
     --player and asteroid
 
     removeDestroidObjects :: World -> World
-    removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{
+    removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, rockets = listofRockets}) = w{
         asteroids = getOnlyNotDesAst listOfAsteroids,
-        bullets = getOnlyNotDesBul listOfBullets
+        bullets = getOnlyNotDesBul listOfBullets,
+        rockets = getOnlyNotDesRock listofRockets
         }
         where
             getOnlyNotDesAst :: [Asteroid] -> [Asteroid]
             getOnlyNotDesAst list = [a | a@(Asteroid {status = NotDestroyed}) <- list]
             getOnlyNotDesBul :: [Bullet] -> [Bullet]
             getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
+            getOnlyNotDesRock :: [Rocket] -> [Rocket]
+            getOnlyNotDesRock list = [c | c@(Rocket {rocketStatus = NotDestroyed}) <- list]
 
      
     -- collision Asteroid and player
     -- hitboxen passen niet best bij player model nu!!
     -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
-    collisionPlayerAsteroid :: Player -> Asteroid -> Bool
-    collisionPlayerAsteroid  p@(Player {playerlocation = (px,py)}) a@( Asteroid {location = (ax,ay)})
-        | ax >= (px-32) && ax <= (px+32) && ay >= (py-32) && ay <= (py+32) = True
-        | otherwise = False
 
     collisionAsteroidPlayer :: Asteroid -> Player -> Bool
-    collisionAsteroidPlayer  a@( Asteroid {location = (ax,ay), status = s}) p@(Player {playerlocation = (px,py)})
+    collisionAsteroidPlayer  a@( Asteroid {location = (ax,ay), size = si}) p@(Player {playerlocation = (px,py)})
         | ax >= (px-32) && ax <= (px+32) && ay >= (py-32) && ay <= (py+32) = True
         | otherwise = False    
     
     asteroidPlayer :: World -> World
     asteroidPlayer w@(World {asteroids = []}) = w
-    asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p}) = w{asteroids = map check listOfAsteroids}
+    asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p, lives = l}) = w{asteroids = map fst (map check listOfAsteroids), lives = minimum (map snd (map check listOfAsteroids))}
             where
-                check asteroid | collisionAsteroidPlayer asteroid p  == False = asteroid
-                               | otherwise = asteroid{status = Destroyed}
-        
-    playerAsteroid :: World -> World
-    playerAsteroid w@(World {asteroids = []}) = w
-    playerAsteroid w@(World {asteroids = listOfAsteroids, lives = l ,player = p}) 
-        | all (==False) (map (collisionPlayerAsteroid p) listOfAsteroids) == True = w 
-        | otherwise = w{lives = (l -1)}
-
+                check asteroid | collisionAsteroidPlayer asteroid p  == False = (asteroid,l)
+                               | otherwise = (asteroid{status = Destroyed},(l-1))
     --calcscore
     scoreChecker :: World -> World
     scoreChecker w@(World {bullets = []}) = w
@@ -234,7 +272,7 @@ module Controller where
     --destroy out of bounds
 
     destroy_out_of_view_objects :: World -> World
-    destroy_out_of_view_objects w = w{ bullets = (destroy_out_of_view_bullets w), asteroids = (destroy_out_of_view_asteroids w)}
+    destroy_out_of_view_objects w = w{ bullets = (destroy_out_of_view_bullets w), asteroids = (destroy_out_of_view_asteroids w) , rockets = (destroy_out_of_view_rockets w)}
         where 
             destroy_out_of_view_bullets :: World -> [Bullet]
             destroy_out_of_view_bullets w@(World {bullets = []}) = []
@@ -248,5 +286,11 @@ module Controller where
             check1 :: Asteroid -> Asteroid
             check1 a@(Asteroid {location = (_,y), size = si}) | y < (-200-6*si) = a{status = Destroyed}
                                                               | otherwise = a
-        
+            destroy_out_of_view_rockets :: World -> [Rocket]
+            destroy_out_of_view_rockets w@(World {rockets = []}) = []
+            destroy_out_of_view_rockets w@(World {rockets = listofRockets'}) = map check2 listofRockets'
+            check2 :: Rocket-> Rocket
+            check2 r@(Rocket{rockLocation = (_,y)}) | y > 200 = r{rocketStatus = Destroyed}
+                                                    | otherwise = r
+
   

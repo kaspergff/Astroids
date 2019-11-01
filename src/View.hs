@@ -21,7 +21,7 @@ module View where
     drawWorld :: World -> Picture
     drawWorld w = Pictures
         (drawAsteroids w ++
-        drawbullets w ++ [drawPlane w] ++ drawScore w ++ drawLives w
+        drawbullets w ++ [drawPlane w] ++ drawScore w ++ drawLives w ++ drawrockets w
         )
 
     drawPlane :: World -> Picture
@@ -36,6 +36,15 @@ module View where
                                                           
     bullet :: Picture
     bullet = color red $ ThickCircle 1 2
+
+    drawrockets :: World -> [Picture]
+    drawrockets w@(World {rockets = listOfRockets}) = map drawrocket listOfRockets
+
+    drawrocket :: Rocket -> Picture
+    drawrocket Rocket {rockLocation = (x,y), rocketStatus = s} = translate x y rocket 
+
+    rocket :: Picture
+    rocket = color green $ Polygon [(-1,10),(1,10),(1,0),(-1,0),(-1,5)]
 
     drawAsteroids :: World -> [Picture]
     drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids
@@ -55,7 +64,6 @@ module View where
     drawLife :: Float -> Float -> Int -> Picture -> [Picture]
     drawLife x y l s | (l < 1) == True = []
                      | otherwise = [(translate x y (scale (0.125/2) (0.125/2) s))] ++ drawLife (x+40) y (l-1) s
-
 
   --score draw functions (for the death screen)
     drawDeathscreen :: World -> Picture
