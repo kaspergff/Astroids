@@ -13,7 +13,7 @@ module View where
     viewPure gstate = case infoToShow gstate of
       ShowNothing       -> blank
       ShowWorld world   -> drawWorld world
-      ShowScore world   -> drawScorescreen world
+      ShowDeathscreen world  -> drawDeathscreen world
   
 
 
@@ -58,8 +58,18 @@ module View where
 
 
   --score draw functions (for the death screen)
-    drawScorescreen :: World -> Picture
-    drawScorescreen = undefined
+    drawDeathscreen :: World -> Picture
+    drawDeathscreen  w = Pictures (drawScore' w ++ supporttext)
+
+    supporttext :: [Picture]
+    supporttext = [p1] ++  [p2] ++  [p3]
+      where 
+        p1 = (translate (-100) 100 (scale 0.2 0.2 (color white $ Text ("your score is : "))))
+        p2 = (translate (-200) (-50) (scale 0.15 0.15 (color white $ Text ("do you wish to save your score?"))))
+        p3 = (translate (-200) (-100) (scale 0.15 0.15 (color white $ Text ("press ' s ' to save and ' x ' to close the window "))))
+
+    drawScore' :: World -> [Picture]
+    drawScore' w@(World {score = s}) = [(translate (-50) 0(scale 0.8 0.8 (color white $ Text (show s))))]
 
 
     

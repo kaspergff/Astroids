@@ -7,7 +7,7 @@ module Model where
 
     data InfoToShow = ShowNothing
                     | ShowWorld World
-                    | ShowScore World
+                    | ShowDeathscreen World
     
     nO_SECS_BETWEEN_CYCLES :: Float
     nO_SECS_BETWEEN_CYCLES = 5
@@ -39,7 +39,8 @@ module Model where
                 playerlocation  :: (Float,Float),
                 movement        :: Movement,
                 -- moest toevoegen om te laten werken is mis inpure
-                sprite          :: Picture 
+                sprite          :: Picture, 
+                isdead          :: Aliveornot
                 }
 
     -- bullets
@@ -69,10 +70,11 @@ module Model where
     data PauseorPlay = Paused | Playing deriving (Eq)
 
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
+    data Aliveornot = Alive | Dead deriving (Eq)
     
     -- moest pla toevoegen om te laten werken is mis inpure
     initial_world :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> World
-    initial_world esg otg ofg pla liv = World (Player (0,-180) NoMovement pla) Playing [] [] 0 esg otg ofg 0 3 liv
+    initial_world esg otg ofg pla liv = World (Player (0,-180) NoMovement pla Alive) Playing [] [] 0 esg otg ofg 0 3 liv
                 
     initialState :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> GameState
     initialState esg otg ofg pla liv = GameState (ShowWorld(initial_world esg otg ofg pla liv)) (initial_world esg otg ofg pla liv) 0 

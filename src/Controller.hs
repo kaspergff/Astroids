@@ -13,6 +13,7 @@ module Controller where
     -- | Handle one iteration of the game
     step :: Float -> GameState -> IO GameState
     step secs gstate  
+        | (isdead $ player $ world gstate) == Dead = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow =  ShowDeathscreen(updateWorld $ world gstate), world = updateWorld $ world gstate}
         | (isPaused $ world gstate) == True = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
         | otherwise = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
     
@@ -67,8 +68,8 @@ module Controller where
 
     --stop game if dead
     checklive :: World -> World
-    checklive w@(World {lives = l}) | l <= 0 = w{pause = Paused}
-                                    | otherwise = w
+    checklive w@(World {lives = l,player = p}) | l <= 0 = w{pause = Paused, player = (p{isdead = Dead})}
+                                               | otherwise = w
 
     -- Move plane
     updatePlane :: World -> World
