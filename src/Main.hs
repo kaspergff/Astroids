@@ -12,7 +12,7 @@ module Main where
     main :: IO () 
     main = do       
         planeafb <- loadBMP "sprites als bitmap/plane.bmp" --load bitmap
-        liveafb <- loadBMP "sprites als bitmap/plane.bmp"
+        liveafb <- loadBMP "sprites als bitmap/heart.bmp"
         ofg <- getStdGen
         otg <- getStdGen
         esp <- getStdGen
