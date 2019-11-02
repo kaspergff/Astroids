@@ -60,8 +60,9 @@ module Controller where
         updateRockets $
         updateBullets $
         scoreChecker $
-        updateAsteroids $ 
-        timeToSpawnAsteroid $
+        updateAsteroids $
+        updateEnemies $ 
+        eos $
         asteroidBullet $
         bulletAsteroid $
         asteroidRocket $
@@ -99,6 +100,30 @@ module Controller where
     isPaused w@(World {pause = paused})
         | paused == Playing = False
         | paused == Paused = True    
+
+    --epic object spawner
+    --hiermee kunnen we de moeilijkheid gaan controleren
+    eos :: World -> World
+    eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w
+                                                    | s >= 20  = timeToSpawnEnemy w
+
+    timeToSpawnEnemy :: World -> World
+    timeToSpawnEnemy w@(World {enemyTimer = time}) 
+        | time < 1 = spawnEnemy w{ enemyTimer = 120}
+        | otherwise = w {enemyTimer = time - 1}     
+
+    --enemies (experimental)
+    updateEnemies :: World -> World
+    updateEnemies w@(World {enemies = listOfEnemies}) = w{enemies = map updateEnemy listOfEnemies}
+
+    updateEnemy :: Enemy -> Enemy
+    updateEnemy e@(Enemy{ enemyLocation = (x,y), espeed = s}) = e{enemyLocation = (x,y+s)}
+
+    spawnEnemy :: World -> World
+    spawnEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (setRanNum g)], asteroidsSpawnGenerator = getGen (genereerRanNum g) }
+
+    createEnemy :: Float-> Enemy
+    createEnemy x = Enemy (x,200) NotDestroyed (-5) 
 
 
     -- rockets bitches
@@ -264,10 +289,11 @@ module Controller where
     --calcscore
     scoreChecker :: World -> World
     scoreChecker w@(World {bullets = []}) = w
-    scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, score = s}) = w{score = maximum (map (check s) listOfBullets)}
+    scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, rockets = listofRockets, score = s}) = w{score =               maximum (map (check s) listOfBullets)}
                 where 
                     check sc bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = sc
                                     | otherwise = (sc + 1)
+                
     --destroy out of bounds
 
     destroy_out_of_view_objects :: World -> World

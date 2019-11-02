@@ -25,13 +25,16 @@ module Model where
                 bullets     :: [Bullet],
                 rockets     :: [Rocket],
                 asteroids   :: [Asteroid],
+                enemies     ::  [Enemy],
                 asteroidTimer   :: Int,
+                enemyTimer :: Int,
                 asteroidsSpawnGenerator :: StdGen,
                 oneThreeGenerator :: StdGen,
                 oneFiveGenerator :: StdGen,
                 score         :: Int,
                 lives         ::  Int,
-                livespr       :: Picture
+                livespr       :: Picture,
+                eSprite :: Picture
                 }
 
 
@@ -51,8 +54,10 @@ module Model where
                 --bmovement :: Movement
                 speed :: Float,
                 bulletStatus :: DestroyedOrNot
-
-               }
+                --voor later zorg
+                --kunnen we mee voor zorgen dat player enkel dood gaat als hij tegen een bullet van de vijand aanvliegt
+                --bulletallegiance :: alliedOrNot
+                }
 
     data Rocket = Rocket {
                 rockLocation :: (Float, Float),            
@@ -69,7 +74,12 @@ module Model where
                     aSpeed           :: Float
                     }
 
-
+    data Enemy = Enemy {
+                    enemyLocation :: (Float,Float),
+                    estatus :: DestroyedOrNot,
+                    espeed :: Float
+                 
+                    }
 
     -- movement player
     data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement | UpleftMovement | UprightMovement | DownleftMovement| DownrightMovement deriving (Eq)
@@ -81,8 +91,8 @@ module Model where
     data Aliveornot = Alive | Dead deriving (Eq)
     
     -- moest pla toevoegen om te laten werken is mis inpure
-    initial_world :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> World
-    initial_world esg otg ofg pla liv = World (Player (0,-180) NoMovement pla Alive) Playing [] [] [] 0 esg otg ofg 0 3 liv
+    initial_world :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> Picture -> World
+    initial_world esg otg ofg pla liv ene = World (Player (0,-180) NoMovement pla Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 liv ene 
                 
-    initialState :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> GameState
-    initialState esg otg ofg pla liv = GameState (ShowWorld(initial_world esg otg ofg pla liv)) (initial_world esg otg ofg pla liv) 0 
+    initialState :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> Picture -> GameState
+    initialState esg otg ofg pla liv ene = GameState (ShowWorld(initial_world esg otg ofg pla liv ene)) (initial_world esg otg ofg pla liv ene) 0 
