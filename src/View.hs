@@ -28,13 +28,13 @@ module View where
 
     drawPlane :: World -> Picture
     --origineel 512x512 dus nu ong 64 bij 64
-    drawPlane w@(World {player = p@(Player {playerlocation = (x,y), sprite = s})}) = (translate x y (scale 0.125 0.125 s))
+    drawPlane w@(World {player = p@(Player {playerlocation = (x,y)}), sprites = s}) = (translate x y (scale 0.125 0.125 (s!!1)))
     
     drawEnemies :: World -> [Picture]
-    drawEnemies w@(World {enemies = listOfEnemies, eSprite = s}) = map (drawEnemy s) listOfEnemies
+    drawEnemies w@(World {enemies = listOfEnemies, sprites = s}) = map (drawEnemy (s!!2)) listOfEnemies
     
     drawEnemy :: Picture -> Enemy -> Picture
-    drawEnemy  p (Enemy {enemyLocation = (x,y)})= (translate x y (scale 0.100 0.100 p))
+    drawEnemy  p (Enemy {enemyLocation = (x,y)})= (translate x y (scale 0.100 0.100 (p)))
 
     
     drawbullets :: World -> [Picture]
@@ -68,7 +68,7 @@ module View where
     drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 500 800 (color white $ Text (show s))))]
 
     drawLives :: World -> [Picture]
-    drawLives w@(World {lives = l, livespr = s}) = drawLife (-180) (170) l s
+    drawLives w@(World {lives = l, sprites = s}) = drawLife (-180) (170) l (s!!1)
 
     drawLife :: Float -> Float -> Int -> Picture -> [Picture]
     drawLife x y l s | (l < 1) == True = []

@@ -33,8 +33,7 @@ module Model where
                 oneFiveGenerator :: StdGen,
                 score         :: Int,
                 lives         ::  Int,
-                livespr       :: Picture,
-                eSprite :: Picture
+                sprites       :: [Picture]
                 }
 
 
@@ -43,7 +42,6 @@ module Model where
                 playerlocation  :: (Float,Float),
                 movement        :: Movement,
                 -- moest toevoegen om te laten werken is mis inpure
-                sprite          :: Picture, 
                 isdead          :: Aliveornot
                 }
 
@@ -91,8 +89,8 @@ module Model where
     data Aliveornot = Alive | Dead deriving (Eq)
     
     -- moest pla toevoegen om te laten werken is mis inpure
-    initial_world :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> Picture -> World
-    initial_world esg otg ofg pla liv ene = World (Player (0,-180) NoMovement pla Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 liv ene 
+    initial_world :: StdGen -> StdGen -> StdGen -> [Picture] -> World
+    initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 spr 
                 
-    initialState :: StdGen -> StdGen -> StdGen -> Picture -> Picture -> Picture -> GameState
-    initialState esg otg ofg pla liv ene = GameState (ShowWorld(initial_world esg otg ofg pla liv ene)) (initial_world esg otg ofg pla liv ene) 0 
+    initialState :: StdGen -> StdGen -> StdGen -> [Picture] -> GameState
+    initialState esg otg ofg spr = GameState (ShowWorld(initial_world esg otg ofg spr)) (initial_world esg otg ofg spr) 0 
