@@ -52,9 +52,8 @@ module Model where
                 --bmovement :: Movement
                 speed :: Float,
                 bulletStatus :: DestroyedOrNot
-                --voor later zorg
-                --kunnen we mee voor zorgen dat player enkel dood gaat als hij tegen een bullet van de vijand aanvliegt
-                --bulletallegiance :: alliedOrNot
+               
+                --bulletallegiance :: AlliedOrNot
                 }
 
     data Rocket = Rocket {
@@ -76,7 +75,6 @@ module Model where
                     enemyLocation :: (Float,Float),
                     estatus :: DestroyedOrNot,
                     espeed :: Float
-                 
                     }
 
     -- movement player
@@ -85,8 +83,8 @@ module Model where
     -- pause the game
     data PauseorPlay = Paused | Playing deriving (Eq)
 
-    data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)
-    data Aliveornot = Alive | Dead deriving (Eq)
+    data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)--for flying enemies and asteroids
+    data Aliveornot = Alive | Dead deriving (Eq)--for the player
     
     -- moest pla toevoegen om te laten werken is mis inpure
     initial_world :: StdGen -> StdGen -> StdGen -> [Picture] -> World

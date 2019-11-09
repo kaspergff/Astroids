@@ -28,7 +28,7 @@ module View where
 
     drawPlane :: World -> Picture
     --origineel 512x512 dus nu ong 64 bij 64
-    drawPlane w@(World {player = p@(Player {playerlocation = (x,y)}), sprites = s}) = (translate x y (scale 0.125 0.125 (s!!1)))
+    drawPlane w@(World {player = p@(Player {playerlocation = (x,y)}), sprites = s}) = (translate x y (scale 0.125 0.125 (s!!0)))
     
     drawEnemies :: World -> [Picture]
     drawEnemies w@(World {enemies = listOfEnemies, sprites = s}) = map (drawEnemy (s!!2)) listOfEnemies
@@ -36,7 +36,6 @@ module View where
     drawEnemy :: Picture -> Enemy -> Picture
     drawEnemy  p (Enemy {enemyLocation = (x,y)})= (translate x y (scale 0.100 0.100 (p)))
 
-    
     drawbullets :: World -> [Picture]
     drawbullets w@(World {bullets = listOfBullets}) = map drawbullet listOfBullets
     
@@ -78,10 +77,6 @@ module View where
 
     drawenemytimer :: World -> [Picture]
     drawenemytimer w@(World {enemyTimer = s}) = [(scale 0.2 0.2 (translate 200 600 (color green $ Text (show s))))]
-
-
-
-
 
   --score draw functions (for the death screen)
     drawDeathscreen :: World -> Picture
