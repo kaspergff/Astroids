@@ -165,6 +165,7 @@ updateRock r@(Rock{ rockLocation = rl, rockHeading = rh, liveTime = lt, rockStat
 checkRockDestryed :: [Rock] -> [Rock]
 checkRockDestryed rockList = [r | r@(Rock {rockStatus = NotDestroyed}) <- rockList]
 
+
 -- Animation / explosion
 
 spawnCluster :: Point -> StdGen -> [Rock]
