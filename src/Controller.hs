@@ -253,7 +253,7 @@ asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) 
             check1 rocket | all (==False) (map (flip collisionAsteroidRocket rocket) listOfAsteroids) == True = rocket
                           | otherwise = rocket{rocketStatus = Destroyed}
 
---player and asteroid        
+        
 -- collision Asteroid and player
 -- hitboxen passen niet best bij player model nu!!
 -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
