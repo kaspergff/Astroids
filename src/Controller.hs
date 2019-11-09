@@ -73,6 +73,7 @@ updateWorld w =
     enemyBulletPlayer $
     timeToSpawnEnemybullet $
     eos $
+    keepAsteroidsOnScreen $
     asteroidBullet $
     enemyBullet $
     asteroidRocket $
@@ -157,13 +158,19 @@ updateAsteroid :: Asteroid -> Asteroid
 updateAsteroid a@(Asteroid{ asteroidLocation = al, asteroidSpeed = s, asteroidHeading = ah}) = a{ asteroidLocation = translatePointVector al ah}
 
 spawnAsteroid :: World -> World
-spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g, oneThreeGenerator = otg, oneFiveGenerator = ofg }) = w{asteroids = listOfAsteroids ++ [createAsteroid (getFirstNumber(generateTreeNumbers g)) (getSecondNumber(generateTreeNumbers g)) (getThirdNumber(generateTreeNumbers g)) (0,-4)]
-, asteroidsSpawnGenerator = getSeed(generateTreeNumbers g)
-{--asteroidsSpawnGenerator = getGen (genereerRanNum g),
-oneThreeGenerator = getGen (genereerRanNumOneThree otg)--}}
+spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g}) = w{asteroids = listOfAsteroids ++ [createAsteroid (getFirstNumber(generateTreeNumbers g)) (getSecondNumber(generateTreeNumbers g)) (getThirdNumber(generateTreeNumbers g)) (getVectorAsteroid(generateVectorAsteroid g))]
+, asteroidsSpawnGenerator = getSeed(generateTreeNumbers g)}
 
 createAsteroid :: Float -> Float -> Float -> Vector -> Asteroid
 createAsteroid x asteroidSize speed v = Asteroid (x,200) asteroidSize NotDestroyed speed v
+
+keepAsteroidsOnScreen :: World -> World
+keepAsteroidsOnScreen w@(World {asteroids = listOfAsteroids}) = w{asteroids = map onScreen listOfAsteroids}
+    where 
+        onScreen a@(Asteroid {asteroidLocation = (ax,_),asteroidHeading = (hx,hy)}) | ax < -240 = a{asteroidHeading = ((hx * (-1)),hy)}
+                                                                                    | ax > 240 = a{asteroidHeading = ((hx * (-1)),hy)}
+                                                                                    | otherwise = a
+
 
 timeToSpawnAsteroid :: World -> World
 timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
@@ -191,6 +198,14 @@ getThirdNumber ((_, _,f), _) = f
 
 getSeed :: RandomGen g => ((Float, Float,Float), g) -> g
 getSeed ((_, _,_), g) = g
+
+generateVectorAsteroid :: RandomGen g => g -> ((Float, Float), g)
+generateVectorAsteroid g = let (v1, g1) = randomR ((-4), 4) g
+                               (v2, g2) = randomR (-1, -5) g1 -- Use new seed
+                           in  ((v1, v2), g2) -- Return last seed
+
+getVectorAsteroid :: RandomGen g => ((Float, Float), g) -> (Float, Float)
+getVectorAsteroid ((x, y), _) = (x,y)
 
 
     -- random nummer generatie   
