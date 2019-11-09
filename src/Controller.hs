@@ -15,11 +15,11 @@ import Data.List (sortBy)
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate  
-    | (playerStatus$ player $ world gstate) == Dead && scoreSaved gstate == False = do 
-        scoreToTXT $ gstate
+    | playerStatus ( player $ world gstate) == Dead && not (scoreSaved gstate) = do 
+        scoreToTXT gstate
         return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate, scoreSaved = True}
-    | (playerStatus$ player $ world gstate) == Dead && scoreSaved gstate = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
-    | (isPaused $ world gstate) == True = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
+    | playerStatus ( player $ world gstate) == Dead && scoreSaved gstate = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
+    | (isPaused $ world gstate) = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
     | otherwise = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
 
 -- | Handle user input
@@ -97,9 +97,9 @@ updatePlane w@(World {player = p@(Player {playerLocation = (x,y), movement = dir
 planeOnScreen :: World -> World
 planeOnScreen w@(World {player = p@(Player {playerLocation = (x,y)})})
     | x <= (-200) = w{ player = p {playerLocation = (-200,y)}}
-    | x >= (200) = w{ player = p {playerLocation = (200,y)}}
+    | x >= 200 = w{ player = p {playerLocation = (200,y)}}
     | y <= (-190) = w{ player = p {playerLocation = (x,-190)}}
-    | y >= (170) = w{ player = p {playerLocation = (x,170)}}
+    | y >= 170 = w{ player = p {playerLocation = (x,170)}}
     | otherwise = w 
 
 isPaused :: World -> Bool
@@ -151,13 +151,13 @@ spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g
 , asteroidsSpawnGenerator = getSeed(generateTreeNumbers g)}
 
 createAsteroid :: Float -> Float -> Float -> Vector -> Asteroid
-createAsteroid x asteroidSize speed v = Asteroid (x,200) asteroidSize NotDestroyed speed v
+createAsteroid x asteroidSize = Asteroid (x, 200) asteroidSize NotDestroyed
 
 keepAsteroidsOnScreen :: World -> World
 keepAsteroidsOnScreen w@(World {asteroids = listOfAsteroids}) = w{asteroids = map onScreen listOfAsteroids}
     where 
-        onScreen a@(Asteroid {asteroidLocation = (ax,_),asteroidHeading = (hx,hy)}) | ax < -240 = a{asteroidHeading = ((hx * (-1)),hy)}
-                                                                                    | ax > 240 = a{asteroidHeading = ((hx * (-1)),hy)}
+        onScreen a@(Asteroid {asteroidLocation = (ax,_),asteroidHeading = (hx,hy)}) | ax < -240 = a{asteroidHeading = (hx * (-1),hy)}
+                                                                                    | ax > 240 = a{asteroidHeading = (hx * (-1),hy)}
                                                                                     | otherwise = a
 -- Update all asteroids    
 moveRocks :: World -> World
@@ -170,7 +170,6 @@ updateRock r@(Rock{ rockLocation = rl, rockHeading = rh, liveTime = lt, rockStat
 
 checkRockDestryed :: [Rock] -> [Rock]
 checkRockDestryed rockList = [r | r@(Rock {rockStatus = NotDestroyed}) <- rockList]
-
 
 -- Animation / explosion
 
@@ -194,7 +193,7 @@ translatePointVector :: Point -> Vector -> Point
 translatePointVector (x1,y1) (x2,y2) = (x1+x2,y1+y2)
 
 generateTreeNumbers :: RandomGen g => g -> ((Float, Float, Float), g)
-generateTreeNumbers g = let (v1, g1) = randomR ((-200), 200) g
+generateTreeNumbers g = let (v1, g1) = randomR (-200, 200) g
                             (v2, g2) = randomR (1, 5) g1 -- Use new seed
                             (v3, g3) = randomR (1, 20) g2 -- Use new seed
                        in ((v1, v2,v3), g3) -- Return last seed
@@ -212,7 +211,7 @@ getSeed :: RandomGen g => ((Float, Float,Float), g) -> g
 getSeed ((_, _,_), g) = g
 
 generateVectorAsteroid :: RandomGen g => g -> ((Float, Float), g)
-generateVectorAsteroid g = let (v1, g1) = randomR ((-4), 4) g
+generateVectorAsteroid g = let (v1, g1) = randomR (-4, 4) g
                                (v2, g2) = randomR (-1, -5) g1 -- Use new seed
                            in  ((v1, v2), g2) -- Return last seed
 
@@ -220,16 +219,16 @@ getVectorAsteroid :: RandomGen g => ((Float, Float), g) -> (Float, Float)
 getVectorAsteroid ((x, y), _) = (x,y)
 
 generaterVectorCluster :: RandomGen g => g -> ((Vector,Vector,Vector,Vector,Vector), g)
-generaterVectorCluster g = let (x1, g1) = randomR ((-4), 4) g
-                               (y1, g2) = randomR ((-4), 4) g1 -- Use new seed
-                               (x2, g3) = randomR ((-4), 4) g2
-                               (y2, g4) = randomR ((-4), 4) g3 -- Use new seed
-                               (x3, g5) = randomR ((-4), 4) g4
-                               (y3, g6) = randomR ((-4), 4) g5 -- Use new seed
-                               (x4, g7) = randomR ((-4), 4) g6
-                               (y4, g8) = randomR ((-4), 4) g7 -- Use new seed
-                               (x5, g9) = randomR ((-4), 4) g8
-                               (y5, g10) = randomR ((-4), 4) g9 -- Use new seed
+generaterVectorCluster g = let (x1, g1) = randomR (-4, 4) g
+                               (y1, g2) = randomR (-4, 4) g1 -- Use new seed
+                               (x2, g3) = randomR (-4, 4) g2
+                               (y2, g4) = randomR (-4, 4) g3 -- Use new seed
+                               (x3, g5) = randomR (-4, 4) g4
+                               (y3, g6) = randomR (-4, 4) g5 -- Use new seed
+                               (x4, g7) = randomR (-4, 4) g6
+                               (y4, g8) = randomR (-4, 4) g7 -- Use new seed
+                               (x5, g9) = randomR (-4, 4) g8
+                               (y5, g10) = randomR (-4, 4) g9 -- Use new seed
                             in (((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5)),g10)
 
 getFirstVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
@@ -248,16 +247,16 @@ updateBullets :: World -> World
 updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
 updateBullet :: Bullet -> Bullet
-updateBullet b@(Bullet{ bulletLocation = (x,y), bulletSpeed = s}) = b{ bulletLocation = (x,(y+s)), bulletSpeed = s}
+updateBullet b@(Bullet{ bulletLocation = (x,y), bulletSpeed = s}) = b{ bulletLocation = (x,y+s), bulletSpeed = s}
 
 spawnBullet :: World -> World
-spawnBullet w@(World {player = p@(Player {playerLocation = (x,y)}), bullets = listOfBullets}) = w{bullets = listOfBullets ++ [(createBullet  Allied 10  (x,y))] }
+spawnBullet w@(World {player = p@(Player {playerLocation = (x,y)}), bullets = listOfBullets}) = w{bullets = listOfBullets ++ [createBullet  Allied 10  (x,y)] }
 
 spawnEnemyBullet :: Enemy -> Bullet
-spawnEnemyBullet (Enemy {enemyLocation = (x,y)}) = (createBullet Notallied (-10) (x,y))
+spawnEnemyBullet (Enemy {enemyLocation = (x,y)}) = createBullet Notallied (-10) (x,y)
 
 spawnEnemyBullets :: World -> World
-spawnEnemyBullets w@(World {enemies = listofEnemies, bullets = listOfBullets}) = w{bullets = listOfBullets ++ (map spawnEnemyBullet listofEnemies)}
+spawnEnemyBullets w@(World {enemies = listofEnemies, bullets = listOfBullets}) = w{bullets = listOfBullets ++ map spawnEnemyBullet listofEnemies}
 
 createBullet :: AlliedOrNot -> Float -> Point -> Bullet
 createBullet a s (x,y) = Bullet (x,y) s NotDestroyed a
@@ -271,17 +270,17 @@ timeToSpawnEnemybullet w@(World {schooterTimer = time})
 --asteroid and bullet
 
 collisionAsteroidBullet :: Asteroid -> Bullet -> Bool
-collisionAsteroidBullet a@(Asteroid {asteroidLocation = (ax,ay), asteroidStatus = s, asteroidSize = si}) b@(Bullet {bulletLocation= (bx,by)})
+collisionAsteroidBullet Asteroid {asteroidLocation = (ax,ay), asteroidStatus = s, asteroidSize = si} Bullet {bulletLocation= (bx,by)}
     | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
     | otherwise = False
 
 asteroidBullet :: World -> World
 asteroidBullet w@(World {asteroids = []}) = w
-asteroidBullet w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g, asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets, rocks = listOfRocks ++ concat (map check3 listOfBullets)}
+asteroidBullet w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g, asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets, rocks = listOfRocks ++ concatMap check3 listOfBullets}
     where
-        check asteroid  | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
+        check asteroid  | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets)  = asteroid
                         | otherwise = asteroid{asteroidStatus = Destroyed}
-        check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = bullet
+        check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids)  = bullet
                         | otherwise = bullet{bulletStatus = Destroyed}
         check3 b@(Bullet{bulletLocation = (bx,by)})   | all (==False) (map (flip collisionAsteroidBullet b) listOfAsteroids) == True = []
                         | otherwise = spawnCluster (bx,by) g
@@ -297,10 +296,10 @@ collisionAsteroidPlayer  a@( Asteroid {asteroidLocation = (ax,ay), asteroidSize 
 
 asteroidPlayer :: World -> World
 asteroidPlayer w@(World {asteroids = []}) = w
-asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p, lives = l}) = w{asteroids = map fst (map check listOfAsteroids), lives = minimum (map snd (map check listOfAsteroids))}
+asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p, lives = l}) = w{asteroids = map (fst.check) listOfAsteroids, lives = minimum (map (snd.check) listOfAsteroids)}
     where
-        check asteroid | collisionAsteroidPlayer asteroid p  == False = (asteroid,l)
-                        | otherwise = (asteroid{asteroidStatus = Destroyed},(l-1))
+        check asteroid | not (collisionAsteroidPlayer asteroid p) = (asteroid,l)
+                       | otherwise = (asteroid{asteroidStatus = Destroyed},l-1)
 
 --player and enemy
 collisionEnemyPlayer :: Enemy -> Player -> Bool
@@ -310,10 +309,10 @@ collisionEnemyPlayer  e@( Enemy {enemyLocation = (ax,ay)}) p@(Player {playerLoca
 
 enemyPlayer :: World -> World
 enemyPlayer w@(World {enemies = []}) = w
-enemyPlayer w@(World {enemies = listOfenemies, player = p, lives = l}) = w{enemies = map fst (map check listOfenemies), lives = minimum (map snd (map check listOfenemies))}
+enemyPlayer w@(World {enemies = listOfenemies, player = p, lives = l}) = w{enemies = map (fst.check) listOfenemies, lives = minimum (map (snd.check) listOfenemies)}
     where
-        check enemy | collisionEnemyPlayer enemy p  == False = (enemy,l)
-                    | otherwise = (enemy{enemyStatus = Destroyed},(l-1))
+        check enemy | not (collisionEnemyPlayer enemy p)  = (enemy,l)
+                    | otherwise = (enemy{enemyStatus = Destroyed},l-1)
 
 --player and enemybullet
 collisionBulletPlayer :: Bullet -> Player -> Bool
@@ -323,10 +322,10 @@ collisionBulletPlayer b@(Bullet {bulletLocation= (bx,by)}) a@(Player {playerLoca
                             
 enemyBulletPlayer :: World -> World
 enemyBulletPlayer w@(World {bullets = []}) = w
-enemyBulletPlayer w@(World {bullets = listOfbullets, player = p, lives = l}) = w{bullets = map fst (map check listOfbullets), lives = minimum (map snd (map check listOfbullets))}
+enemyBulletPlayer w@(World {bullets = listOfbullets, player = p, lives = l}) = w{bullets = map (fst.check) listOfbullets, lives = minimum (map (snd.check) listOfbullets)}
     where
-        check bullet@(Bullet {bulletAllegiance = a}) | (not(collisionBulletPlayer bullet p)) || a == Allied  = (bullet,l)
-                                                        | otherwise = (bullet{bulletStatus = Destroyed},(l-1))
+        check bullet@(Bullet {bulletAllegiance = a}) | not(collisionBulletPlayer bullet p) || a == Allied  = (bullet,l)
+                                                    | otherwise = (bullet{bulletStatus = Destroyed},(l-1))
 
 --enemy and playerbullet
 collisionEnemyBullet :: Enemy -> Bullet -> Bool
@@ -338,9 +337,9 @@ enemyBullet :: World -> World
 enemyBullet w@(World {enemies = []}) = w
 enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{enemies = map check listOfEnemies,bullets = map check1 listOfBullets}
     where
-        check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) == True = enemy
+        check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) = enemy
                     | otherwise = enemy{enemyStatus = Destroyed}
-        check1 bullet | all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True = bullet
+        check1 bullet | all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) = bullet
                       | otherwise = bullet{bulletStatus = Destroyed}
 
 --calcscore
