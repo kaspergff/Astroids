@@ -68,7 +68,8 @@ module Model where
                     asteroidLocation :: Point,
                     asteroidSize     :: Float,
                     asteroidStatus   :: DestroyedOrNot,
-                    asteroidSpeed    :: Float
+                    asteroidSpeed    :: Float,
+                    asteroidHeading  :: Vector
                     }
 
     data Enemy = Enemy {

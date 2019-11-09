@@ -146,7 +146,7 @@ updateRocket r@(Rocket{ rocketLocation = (x,y), rocketSpeed = s}) = r{ rocketLoc
 spawnRocket :: World -> World
 spawnRocket w@(World {player = p@(Player {playerLocation = (x,y)}), rockets = listOfRockets}) = w{rockets = listOfRockets ++ [(createRocket ((x-10),y))] ++ [(createRocket ((x+10),y))]  }
 
-createRocket :: (Float,Float) -> Rocket
+createRocket :: Point -> Rocket
 createRocket (x,y) = Rocket (x,y) 15 NotDestroyed
 
 -- Update all asteroids    
@@ -154,20 +154,44 @@ updateAsteroids :: World -> World
 updateAsteroids w@(World {asteroids = listOfAsteroids}) = w{asteroids = map updateAsteroid listOfAsteroids}
 
 updateAsteroid :: Asteroid -> Asteroid
-updateAsteroid a@(Asteroid{ asteroidLocation = (x,y), asteroidSpeed = s}) = a{ asteroidLocation = (x,y-s)}
+updateAsteroid a@(Asteroid{ asteroidLocation = al, asteroidSpeed = s, asteroidHeading = ah}) = a{ asteroidLocation = translatePointVector al ah}
 
 spawnAsteroid :: World -> World
-spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g, oneThreeGenerator = otg, oneFiveGenerator = ofg }) = w{asteroids = listOfAsteroids ++ [createAsteroid (setRanNum g) (setRanNumOneThree g) 4 ],
-asteroidsSpawnGenerator = getGen (genereerRanNum g),
-oneThreeGenerator = getGen (genereerRanNumOneThree otg)}
+spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g, oneThreeGenerator = otg, oneFiveGenerator = ofg }) = w{asteroids = listOfAsteroids ++ [createAsteroid (getFirstNumber(generateTreeNumbers g)) (getSecondNumber(generateTreeNumbers g)) (getThirdNumber(generateTreeNumbers g)) (0,-4)]
+, asteroidsSpawnGenerator = getSeed(generateTreeNumbers g)
+{--asteroidsSpawnGenerator = getGen (genereerRanNum g),
+oneThreeGenerator = getGen (genereerRanNumOneThree otg)--}}
 
-createAsteroid :: Float -> Float -> Float -> Asteroid
-createAsteroid x asteroidSize speed = Asteroid (x,200) asteroidSize NotDestroyed speed
+createAsteroid :: Float -> Float -> Float -> Vector -> Asteroid
+createAsteroid x asteroidSize speed v = Asteroid (x,200) asteroidSize NotDestroyed speed v
 
 timeToSpawnAsteroid :: World -> World
 timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
     | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
     | otherwise = w {asteroidTimer = time - 1}
+
+translatePointVector :: Point -> Vector -> Point
+translatePointVector (x1,y1) (x2,y2) = (x1+x2,y1+y2)
+
+
+generateTreeNumbers :: RandomGen g => g -> ((Float, Float, Float), g)
+generateTreeNumbers g = let (v1, g1) = randomR ((-200), 200) g
+                            (v2, g2) = randomR (1, 5) g1 -- Use new seed
+                            (v3, g3) = randomR (1, 20) g2 -- Use new seed
+                       in ((v1, v2,v3), g3) -- Return last seed
+
+getFirstNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
+getFirstNumber ((f, _,_), _) = f
+
+getSecondNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
+getSecondNumber ((_, f,_), _) = f
+
+getThirdNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
+getThirdNumber ((_, _,f), _) = f
+
+getSeed :: RandomGen g => ((Float, Float,Float), g) -> g
+getSeed ((_, _,_), g) = g
+
 
     -- random nummer generatie   
 getGen :: (Float, StdGen) -> StdGen
@@ -213,7 +237,7 @@ spawnEnemyBullet (Enemy {enemyLocation = (x,y)}) = (createBullet Notallied (-10)
 spawnEnemyBullets :: World -> World
 spawnEnemyBullets w@(World {enemies = listofEnemies, bullets = listOfBullets}) = w{bullets = listOfBullets ++ (map spawnEnemyBullet listofEnemies)}
 
-createBullet :: AlliedOrNot -> Float -> (Float,Float) -> Bullet
+createBullet :: AlliedOrNot -> Float -> Point -> Bullet
 createBullet a s (x,y) = Bullet (x,y) s NotDestroyed a
 
 timeToSpawnEnemybullet :: World -> World
