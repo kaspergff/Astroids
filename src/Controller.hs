@@ -73,6 +73,8 @@ updateWorld w =
     timeToSpawnEnemybullet $
     eos $
     asteroidBullet $
+    bulletEnemy $
+    enemyBullet $
     bulletAsteroid $
     asteroidRocket $
     rocketAsteroid $
@@ -112,6 +114,7 @@ isPaused w@(World {pause = paused})
 
 --epic object spawner
 --hiermee kunnen we de moeilijkheid gaan controleren
+--kunnen meer ettapes toevoegen
 eos :: World -> World
 eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w
                                                 | s >= 20  = timeToSpawnEnemy w
@@ -272,26 +275,7 @@ rocketAsteroid w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) 
                 check rocket | all (==False) (map (collisionRocketAsteroid rocket) listOfAsteroids) == True = rocket
                                 | otherwise = rocket{rocketStatus = Destroyed}
 
---player and asteroid
-removeDestroidObjects :: World -> World
-removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, rockets = listofRockets, enemies = listofEnemies}) = w{
-    asteroids = getOnlyNotDesAst listOfAsteroids,
-    bullets = getOnlyNotDesBul listOfBullets,
-    rockets = getOnlyNotDesRock listofRockets,
-    enemies = getOnlyNotDesEnemy listofEnemies
-
-    }
-    where
-        getOnlyNotDesAst :: [Asteroid] -> [Asteroid]
-        getOnlyNotDesAst list = [a | a@(Asteroid {status = NotDestroyed}) <- list]
-        getOnlyNotDesBul :: [Bullet] -> [Bullet]
-        getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
-        getOnlyNotDesRock :: [Rocket] -> [Rocket]
-        getOnlyNotDesRock list = [c | c@(Rocket {rocketStatus = NotDestroyed}) <- list]
-        getOnlyNotDesEnemy :: [Enemy] -> [Enemy]
-        getOnlyNotDesEnemy list = [d | d@(Enemy {estatus = NotDestroyed}) <- list]
-
-        
+--player and asteroid        
 -- collision Asteroid and player
 -- hitboxen passen niet best bij player model nu!!
 -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
@@ -340,16 +324,16 @@ enemyBulletPlayer w@(World {bullets = listOfbullets, player = p, lives = l}) = w
                                                          | otherwise = (bullet{bulletStatus = Destroyed},(l-1))
 
 --enemy and playerbullet
-{-
+
 collisionEnemyBullet :: Enemy -> Bullet -> Bool
-collisionEnemyBullet e@(Enemy {enemyLocation = (ax,ay), estatus = s}) b@(Bullet {bulletLocation= (bx,by)})
-    | ax >= (bx-35) && ax <= (bx+35) && ay >= (by-35) && ay <= (by+35) = True
+collisionEnemyBullet e@(Enemy {enemyLocation = (ax,ay), estatus = s}) b@(Bullet {bulletLocation= (bx,by), bulletallegiance = a})
+    | ax >= (bx-36.5) && ax <= (bx+36.5) && ay >= (by-36.5) && ay <= (by+36.5) && a == Allied = True
     | otherwise = False
 
 
 collisionBulletEnemy :: Bullet -> Enemy -> Bool
-collisionBulletEnemy b@(Bullet {bulletLocation= (bx,by)}) a@(Asteroid {location = (ax,ay), status = s, size = si})
-    | ax >= (bx-35) && ax <= (bx+35) && ay >= (by-35) && ay <= (by+35) = True
+collisionBulletEnemy b@(Bullet {bulletLocation= (bx,by),bulletallegiance = a}) e@(Enemy {enemyLocation = (ax,ay)})
+    | ax >= (bx-36) && ax <= (bx+36) && ay >= (by-36) && ay <= (by+36) && a == Allied = True
     | otherwise = False    
 
 enemyBullet :: World -> World
@@ -361,20 +345,22 @@ enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{ene
                     
 bulletEnemy :: World -> World
 bulletEnemy w@(World {bullets = []}) = w
-bulletEnemy w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{bullets = map check listOfBullets}
+bulletEnemy w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{bullets = map check listOfBullets}
             where 
-                check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
+                check bullet | all (==False) (map (collisionBulletEnemy bullet) listOfEnemies) == True = bullet
                                 | otherwise = bullet{bulletStatus = Destroyed}
--}
 
 --calcscore
 scoreChecker :: World -> World
 scoreChecker w@(World {bullets = []}) = w
-scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, rockets = listofRockets, score = s}) = w{score =               maximum (map (check s) listOfBullets)}
+scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listOfEnemies, score = s}) = w{score =  maximum ((map(check1 s)listOfBullets) ++ (map (check s) listOfBullets))   }
             where 
                 check sc bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = sc
                                 | otherwise = (sc + 1)
+                check1 sc bullet@(Bullet { bulletallegiance = a}) | (all (==False) (map (collisionBulletEnemy bullet) listOfEnemies) == True) = sc
+                                                                  | otherwise = (sc + 1)
             
+
 --destroy out of bounds
 
 destroy_out_of_view_objects :: World -> World
@@ -388,7 +374,7 @@ destroy_out_of_view_objects w = w{
         destroy_out_of_view_bullets w@(World {bullets = []}) = []
         destroy_out_of_view_bullets w@(World {bullets = listOfBullets'}) = map check listOfBullets'
         check :: Bullet -> Bullet
-        check b@(Bullet {bulletLocation = (_,y)}) | y > 200 = b{bulletStatus = Destroyed}
+        check b@(Bullet {bulletLocation = (_,y)}) | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
                                                     | otherwise = b 
         destroy_out_of_view_asteroids :: World -> [Asteroid]
         destroy_out_of_view_asteroids w@(World {asteroids = []}) = []
@@ -408,6 +394,26 @@ destroy_out_of_view_objects w = w{
         check3 :: Enemy -> Enemy
         check3 e@(Enemy{enemyLocation = (_,y)}) | y < (-220) = e{estatus = Destroyed}
                                                  | otherwise = e
+--remove destroyed stuff
+removeDestroidObjects :: World -> World
+removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, rockets = listofRockets, enemies = listofEnemies}) = w{
+    asteroids = getOnlyNotDesAst listOfAsteroids,
+    bullets = getOnlyNotDesBul listOfBullets,
+    rockets = getOnlyNotDesRock listofRockets,
+    enemies = getOnlyNotDesEnemy listofEnemies
+
+    }
+    where
+        getOnlyNotDesAst :: [Asteroid] -> [Asteroid]
+        getOnlyNotDesAst list = [a | a@(Asteroid {status = NotDestroyed}) <- list]
+        getOnlyNotDesBul :: [Bullet] -> [Bullet]
+        getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
+        getOnlyNotDesRock :: [Rocket] -> [Rocket]
+        getOnlyNotDesRock list = [c | c@(Rocket {rocketStatus = NotDestroyed}) <- list]
+        getOnlyNotDesEnemy :: [Enemy] -> [Enemy]
+        getOnlyNotDesEnemy list = [d | d@(Enemy {estatus = NotDestroyed}) <- list]
+
+
 
 -- File handling
 -- Write the current score to the "scores.txt" file

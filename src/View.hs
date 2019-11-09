@@ -26,7 +26,6 @@ module View where
     drawWorld w = Pictures
         (drawAsteroids w ++
          drawEnemies w ++
-         drawenemytimer w ++
         drawbullets w ++ drawrockets w ++ [drawPlane w] ++ drawScore w ++ drawLives w 
         )
 
@@ -47,7 +46,7 @@ module View where
     drawbullet Bullet { bulletLocation = (x,y), bulletStatus = s} = translate x y bullet
                                                           
     bullet :: Picture
-    bullet = color red $ ThickCircle 1 2
+    bullet = color blue $ ThickCircle 1 2
 
     drawrockets :: World -> [Picture]
     drawrockets w@(World {rockets = listOfRockets}) = map drawrocket listOfRockets
@@ -77,13 +76,7 @@ module View where
     drawLife x y l s | (l < 1) == True = []
                      | otherwise = [(translate x y (scale (0.125/2) (0.125/2) s))] ++ drawLife (x+40) y (l-1) s
 
---debug
-
-    drawenemytimer :: World -> [Picture]
-    drawenemytimer w@(World {enemyTimer = s}) = [(scale 0.2 0.2 (translate 200 600 (color green $ Text (show s))))]
-
-
-        -- Draws the final screen
+    -- Draws the final screen
     drawDeathscreen :: World -> Picture
     drawDeathscreen w@(World {score = points}) = setHighScoreText (setGameOver (drawFinalPoints w))
 
