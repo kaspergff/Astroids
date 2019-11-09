@@ -31,12 +31,11 @@ module Model where
                 asteroidTimer           :: Int,
                 enemyTimer              :: Int,
                 asteroidsSpawnGenerator :: StdGen,
-                oneThreeGenerator       :: StdGen,
-                oneFiveGenerator        :: StdGen,
                 score                   :: Int,
                 lives                   :: Int,
                 sprites                 :: [Picture],
-                schooterTimer           :: Int
+                schooterTimer           :: Int,
+                rocks                   :: [Rock]
                 }
 
     -- player
@@ -70,6 +69,13 @@ module Model where
                     asteroidSpeed    :: Float,
                     asteroidHeading  :: Vector
                     }
+    data Rock = Rock {
+                rockLocation :: Point,
+                rockHeading  :: Vector,
+                liveTime     :: Int,
+                rockStatus   :: DestroyedOrNot
+
+    }
 
     data Enemy = Enemy {
                     enemyLocation :: Point,
@@ -89,11 +95,11 @@ module Model where
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)--for flying enemies and asteroids
     data Aliveornot = Alive | Dead deriving (Eq)--for the player
     
-    initial_world :: StdGen -> StdGen -> StdGen -> [Picture] -> World
-    initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 spr 40
+    initial_world :: StdGen -> [Picture] -> World
+    initial_world esg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg 0 3 spr 40 []
                 
-    initialState :: StdGen -> StdGen -> StdGen -> [Picture] -> GameState
-    initialState esg otg ofg spr = GameState (ShowWorld(initial_world esg otg ofg spr)) (initial_world esg otg ofg spr) 0 False
+    initialState :: StdGen -> [Picture] -> GameState
+    initialState esg spr = GameState (ShowWorld(initial_world esg spr)) (initial_world esg spr) 0 False
 
     
 

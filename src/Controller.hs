@@ -76,6 +76,8 @@ updateWorld w =
     enemyBullet $
     asteroidRocket $
     destroy_out_of_view_objects $
+    spawnRock $
+    moveRocks $
     removeDestroidObjects w
 
 --stop game if dead
@@ -129,7 +131,7 @@ updateEnemy :: Enemy -> Enemy
 updateEnemy e@(Enemy{ enemyLocation = (x,y), enemySpeed = s}) = e{enemyLocation = (x,y+s)}
 
 spawnEnemy :: World -> World
-spawnEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (setRanNum g)], asteroidsSpawnGenerator = getGen (genereerRanNum g) }
+spawnEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (getFirstNumber(generateTreeNumbers g)) ], asteroidsSpawnGenerator = getSeed(generateTreeNumbers g) }
 
 createEnemy :: Float-> Enemy
 createEnemy x = Enemy (x,200) NotDestroyed (-3)
@@ -167,6 +169,31 @@ keepAsteroidsOnScreen w@(World {asteroids = listOfAsteroids}) = w{asteroids = ma
         onScreen a@(Asteroid {asteroidLocation = (ax,_),asteroidHeading = (hx,hy)}) | ax < -240 = a{asteroidHeading = ((hx * (-1)),hy)}
                                                                                     | ax > 240 = a{asteroidHeading = ((hx * (-1)),hy)}
                                                                                     | otherwise = a
+-- Update all asteroids    
+moveRocks :: World -> World
+moveRocks w@(World {rocks = listOfRocks}) = w{rocks = map updateRock (checkRockDestryed listOfRocks)}
+
+updateRock :: Rock -> Rock
+updateRock r@(Rock{ rockLocation = rl, rockHeading = rh, liveTime = lt, rockStatus = rs}) 
+    |  lt < 0 = r{ rockStatus = Destroyed}
+    | otherwise = r{ rockLocation = translatePointVector rl rh, liveTime = lt -1}
+
+checkRockDestryed :: [Rock] -> [Rock]
+checkRockDestryed rockList = [r | r@(Rock {rockStatus = NotDestroyed}) <- rockList]
+
+-- Animation / explosion
+
+spawnCluster :: Point -> StdGen -> [Rock]
+spawnCluster p g = [createRock p (getFirstVector (generaterVectorCluster g))] ++ 
+                    [createRock p (getSecondVector (generaterVectorCluster g))] ++ 
+                    [createRock p (getThirdVector (generaterVectorCluster g))] ++ 
+                    [createRock p (getFourthVector (generaterVectorCluster g))] ++
+                    [createRock p (getFifthVector (generaterVectorCluster g))]
+spawnRock :: World -> World
+spawnRock w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g}) =w{rocks = listOfRocks ++ spawnCluster (100,100) g}
+
+createRock :: Point -> Vector -> Rock
+createRock p v = Rock p v 4 NotDestroyed
 
 
 timeToSpawnAsteroid :: World -> World
@@ -203,32 +230,29 @@ generateVectorAsteroid g = let (v1, g1) = randomR ((-4), 4) g
 getVectorAsteroid :: RandomGen g => ((Float, Float), g) -> (Float, Float)
 getVectorAsteroid ((x, y), _) = (x,y)
 
-    -- random nummer generatie   
-getGen :: (Float, StdGen) -> StdGen
-getGen (_, g) = g
+generaterVectorCluster :: RandomGen g => g -> ((Vector,Vector,Vector,Vector,Vector), g)
+generaterVectorCluster g = let (x1, g1) = randomR ((-4), 4) g
+                               (y1, g2) = randomR ((-4), 4) g1 -- Use new seed
+                               (x2, g3) = randomR ((-4), 4) g2
+                               (y2, g4) = randomR ((-4), 4) g3 -- Use new seed
+                               (x3, g5) = randomR ((-4), 4) g4
+                               (y3, g6) = randomR ((-4), 4) g5 -- Use new seed
+                               (x4, g7) = randomR ((-4), 4) g6
+                               (y4, g8) = randomR ((-4), 4) g7 -- Use new seed
+                               (x5, g9) = randomR ((-4), 4) g8
+                               (y5, g10) = randomR ((-4), 4) g9 -- Use new seed
+                            in (((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5)),g10)
 
-getRanNum :: (Float, StdGen) -> Float
-getRanNum (x, _) = x
-
-genereerRanNum :: StdGen -> (Float, StdGen)
-genereerRanNum g = randomR ((-200), 200) g
-
-setRanNum :: StdGen -> Float
-setRanNum g = getRanNum (genereerRanNum g)
-
--- random nummer 1 - 3
-genereerRanNumOneThree :: StdGen -> (Float, StdGen)
-genereerRanNumOneThree g = randomR (1, 3) g
-
-setRanNumOneThree :: StdGen -> Float
-setRanNumOneThree g = getRanNum (genereerRanNumOneThree g)
-
--- random nummer 1 - 5
-genereerRanNumOneFive :: StdGen -> (Float, StdGen)
-genereerRanNumOneFive g = randomR (1, 5) g
-
-setRanNumOneFive :: StdGen -> Float
-setRanNumOneFive g = getRanNum (genereerRanNumOneFive g)
+getFirstVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getFirstVector (((x,y),_,_,_,_), _) = (x,y)
+getSecondVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getSecondVector ((_,v,_,_,_), _) = v
+getThirdVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getThirdVector ((_,_,v,_,_), _) = v
+getFourthVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getFourthVector ((_,_,_,v,_), _) = v
+getFifthVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getFifthVector ((_,_,_,_,v), _) = v
 
 -- bullets
 updateBullets :: World -> World
@@ -408,18 +432,22 @@ scoreToTXT gstate@(GameState{world = w@(World {score = p})})  =
         when (length scores > 0) $ writeFile "scores.txt" scores
         return gstate
 
---Read the highscores from the "scores.txt" file
 getScoreFromTXT :: IO [String]
 getScoreFromTXT = 
     do
-        f <- readFile "scores.txt"
-        if (length f > 1) then do
-            let content =  lines f
-                tups = map readTup content
-                stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
-                scores = map scoreString stups
-            return (reverse scores)
-        else return []
+      f <- readFile "scores.txt"
+      if (length f > 1) then do
+        let content =  lines f
+            tups = map readTup content
+            stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
+            scores = map scoreString stups
+        return (reverse scores)
+      else return []
+
+getIOString :: IO String
+getIOString = do f <- readFile "scores.txt"
+                 return f
+
 
 scoreString :: (Int, String) -> String
 scoreString (x,y) = y ++ ": " ++ show x

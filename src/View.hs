@@ -24,7 +24,7 @@ module View where
     drawWorld w = Pictures
         (drawAsteroids w ++
          drawEnemies w ++
-        drawbullets w ++ drawrockets w ++ [drawPlane w] ++ drawScore w ++ drawLives w 
+        drawbullets w ++ drawrockets w ++ [drawPlane w] ++ drawScore w ++ drawLives w ++ drawRocks w
         )
 
     drawPlane :: World -> Picture
@@ -63,6 +63,12 @@ module View where
 
     asteroid :: Float -> Picture
     asteroid a =  color white $ Line [(0*a,0*a), (5*a,4*a), (6*a,7*a), (4*a,9*a), (-3*a, 12*a), (-8*a,7*a),(-6*a,3*a),(0*a,0*a)]
+    
+    drawRocks :: World -> [Picture]
+    drawRocks w@(World {rocks = listOfRocks}) = map drawRock listOfRocks
+
+    drawRock :: Rock -> Picture
+    drawRock Rock{rockLocation = (x,y)} = translate x y (color white $ ThickCircle 1 3)
 
     drawScore :: World -> [Picture]
     drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 500 800 (color white $ Text (show s))))]
