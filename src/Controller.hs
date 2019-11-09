@@ -133,7 +133,7 @@ spawnEnemy :: World -> World
 spawnEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (setRanNum g)], asteroidsSpawnGenerator = getGen (genereerRanNum g) }
 
 createEnemy :: Float-> Enemy
-createEnemy x = Enemy (x,200) NotDestroyed (-5)
+createEnemy x = Enemy (x,200) NotDestroyed (-3)
 
 -- rockets bitches
 
