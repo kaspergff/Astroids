@@ -7,7 +7,11 @@ module View where
     import Controller
     
     view :: GameState -> IO Picture
-    view = return.viewPure
+    view gstate@(GameState {world = w@(World {score = points})}) = do
+      let p = viewPure gstate
+      case infoToShow gstate of
+          ShowDeathscreen w -> highScoreScreen p
+          _ -> return p
     
     viewPure :: GameState -> Picture
     viewPure gstate = case infoToShow gstate of
@@ -78,19 +82,32 @@ module View where
     drawenemytimer :: World -> [Picture]
     drawenemytimer w@(World {enemyTimer = s}) = [(scale 0.2 0.2 (translate 200 600 (color green $ Text (show s))))]
 
-  --score draw functions (for the death screen)
+
+        -- Draws the final screen
     drawDeathscreen :: World -> Picture
-    drawDeathscreen  w = Pictures (drawScore' w ++ supporttext)
+    drawDeathscreen w@(World {score = points}) = setHighScoreText (setGameOver (drawFinalPoints w))
 
-    supporttext :: [Picture]
-    supporttext = [p1] ++  [p2] ++  [p3]
-      where 
-        p1 = (translate (-100) 100 (scale 0.2 0.2 (color white $ Text ("your score is : "))))
-        p2 = (translate (-200) (-50) (scale 0.15 0.15 (color white $ Text ("do you wish to save your score?"))))
-        p3 = (translate (-200) (-100) (scale 0.15 0.15 (color white $ Text ("press ' s ' to save and ' x ' to close the window "))))
+    drawFinalPoints :: World -> Picture 
+    drawFinalPoints w@(World {score = points}) = (translate (-100) 100 (scale 0.2 0.2 (color white $ Text ("You scored: " ++ (show points) ++ " points"))))
 
-    drawScore' :: World -> [Picture]
-    drawScore' w@(World {score = s}) = [(translate (-50) 0(scale 0.8 0.8 (color white $ Text (show s))))]
+    setGameOver :: Picture -> Picture
+    setGameOver p = Pictures ([p] ++ [(translate (-100) 130 (scale 0.2 0.2 (color white $ Text ("Game Over!"))))])
 
+    setHighScoreText :: Picture -> Picture
+    setHighScoreText p = Pictures([p] ++ [(translate (-100) 70 (scale 0.2 0.2 (color white $ Text ("Highscores: "))))])
 
-    
+        -- Reads the highscores from the file and draws them on the screen
+    highScoreScreen :: Picture -> IO Picture
+    highScoreScreen p = do
+      highscores <- getScoreFromTXT
+      let amount = length highscores
+          inPlace = hScoreOnScreen highscores amount
+          hSscreen = Pictures ([p] ++ inPlace)
+      return hSscreen
+
+    hScoreOnScreen :: [String] -> Int -> [Picture]
+    hScoreOnScreen s 0 = [] 
+    hScoreOnScreen s n = (translate (-100) (setScoreD n) (scale 0.2 0.2 (color white $ Text((s !! (n-1)) ++ " ")))) : hScoreOnScreen s (n-1)
+
+    setScoreD :: Int -> Float
+    setScoreD x = (-200) + 50 * fromIntegral x
