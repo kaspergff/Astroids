@@ -41,7 +41,7 @@ module Model where
 
     -- player
     data Player = Player {
-                playerlocation  :: (Float,Float),
+                playerlocation  :: Point,
                 movement        :: Movement,
                 playerstatus          :: Aliveornot
                 }
@@ -49,7 +49,7 @@ module Model where
     -- bullets
 
     data Bullet = Bullet {
-                bulletLocation :: (Float, Float),            
+                bulletLocation :: Point,            
                 speed :: Float,
                 bulletStatus :: DestroyedOrNot,
                 bulletallegiance :: AlliedOrNot
@@ -58,23 +58,26 @@ module Model where
     data AlliedOrNot = Allied | Notallied deriving (Eq)
 
     data Rocket = Rocket {
-                rockLocation :: (Float, Float),            
+                rockLocation :: Point,            
                 rspeed :: Float,
                 rocketStatus :: DestroyedOrNot
                 }
 
     data Asteroid = Asteroid {
-                    location		:: (Float,Float),
+                    location		:: Point,
                     size            :: Float,
                     status  :: DestroyedOrNot,
                     aSpeed           :: Float
                     }
 
     data Enemy = Enemy {
-                    enemyLocation :: (Float,Float),
+                    enemyLocation :: Point,
                     estatus :: DestroyedOrNot,
                     espeed :: Float
                     }
+    
+    --data Point = Point Float Float
+    --data Vector = Vector Float Float
 
     -- movement player
     data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement | UpleftMovement | UprightMovement | DownleftMovement| DownrightMovement deriving (Eq)
