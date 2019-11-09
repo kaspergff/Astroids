@@ -39,7 +39,6 @@ module Model where
                 schooterTimer           :: Int
                 }
 
-
     -- player
     data Player = Player {
                 playerLocation :: Point,
@@ -90,7 +89,6 @@ module Model where
     data DestroyedOrNot = Destroyed | NotDestroyed deriving (Eq)--for flying enemies and asteroids
     data Aliveornot = Alive | Dead deriving (Eq)--for the player
     
-    -- moest pla toevoegen om te laten werken is mis inpure
     initial_world :: StdGen -> StdGen -> StdGen -> [Picture] -> World
     initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 spr 40
                 

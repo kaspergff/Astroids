@@ -88,10 +88,10 @@ checklive w@(World {lives = l,player = p}) | l <= 0 = w{pause = Paused, player =
 updatePlane :: World -> World
 
 updatePlane w@(World {player = p@(Player {playerLocation = (x,y), movement = dir})})
-    | dir == RightMovement = w{ player = p {playerLocation = (x + 11 ,y), movement = RightMovement}}
-    | dir == LeftMovement = w{ player = p {playerLocation = (x - 11,y), movement = LeftMovement}}
-    | dir == DownMovement = w{ player = p {playerLocation = (x,y - 11), movement = DownMovement}}
-    | dir == UpMovement = w{ player = p {playerLocation = (x,y + 11), movement = UpMovement}}
+    | dir == RightMovement = w{ player = p {playerLocation = (x + 10 ,y), movement = RightMovement}}
+    | dir == LeftMovement = w{ player = p {playerLocation = (x - 10,y), movement = LeftMovement}}
+    | dir == DownMovement = w{ player = p {playerLocation = (x,y - 10), movement = DownMovement}}
+    | dir == UpMovement = w{ player = p {playerLocation = (x,y + 10), movement = UpMovement}}
     | dir == UpleftMovement = w{ player = p {playerLocation = (x - 5.5 , y + 5.5), movement = UpleftMovement}}
     | dir == UprightMovement = w{ player = p {playerLocation = (x + 5.5, y + 5.5), movement = UprightMovement}}
     | dir == NoMovement = w
@@ -136,7 +136,6 @@ createEnemy :: Float-> Enemy
 createEnemy x = Enemy (x,200) NotDestroyed (-3)
 
 -- rockets bitches
-
 updateRockets :: World -> World
 updateRockets w@(World {rockets = listOfRockets}) = w{rockets = map updateRocket listOfRockets}
 
@@ -173,7 +172,6 @@ timeToSpawnAsteroid w@(World {asteroidTimer = time})
 translatePointVector :: Point -> Vector -> Point
 translatePointVector (x1,y1) (x2,y2) = (x1+x2,y1+y2)
 
-
 generateTreeNumbers :: RandomGen g => g -> ((Float, Float, Float), g)
 generateTreeNumbers g = let (v1, g1) = randomR ((-200), 200) g
                             (v2, g2) = randomR (1, 5) g1 -- Use new seed
@@ -192,8 +190,7 @@ getThirdNumber ((_, _,f), _) = f
 getSeed :: RandomGen g => ((Float, Float,Float), g) -> g
 getSeed ((_, _,_), g) = g
 
-
-    -- random nummer generatie   
+-- random nummer generatie   
 getGen :: (Float, StdGen) -> StdGen
 getGen (_, g) = g
 
@@ -212,8 +209,8 @@ genereerRanNumOneThree g = randomR (1, 3) g
 
 setRanNumOneThree :: StdGen -> Float
 setRanNumOneThree g = getRanNum (genereerRanNumOneThree g)
--- random nummer 1 - 5
 
+-- random nummer 1 - 5
 genereerRanNumOneFive :: StdGen -> (Float, StdGen)
 genereerRanNumOneFive g = randomR (1, 5) g
 
@@ -221,7 +218,6 @@ setRanNumOneFive :: StdGen -> Float
 setRanNumOneFive g = getRanNum (genereerRanNumOneFive g)
 
 -- bullets
-
 updateBullets :: World -> World
 updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
 
@@ -256,29 +252,26 @@ collisionAsteroidBullet a@(Asteroid {asteroidLocation = (ax,ay), asteroidStatus 
 asteroidBullet :: World -> World
 asteroidBullet w@(World {asteroids = []}) = w
 asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets}
-        where
-            check asteroid  | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
-                            | otherwise = asteroid{asteroidStatus = Destroyed}
-            check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = bullet
-                            | otherwise = bullet{bulletStatus = Destroyed}
+    where
+        check asteroid  | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
+                        | otherwise = asteroid{asteroidStatus = Destroyed}
+        check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = bullet
+                        | otherwise = bullet{bulletStatus = Destroyed}
 
 --asteroid and rocket
 collisionAsteroidRocket :: Asteroid -> Rocket -> Bool
 collisionAsteroidRocket a@(Asteroid {asteroidLocation = (ax,ay), asteroidStatus = s, asteroidSize = si}) b@(Rocket {rocketLocation = (bx,by)}) 
     | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
     | otherwise = False
-
-   
+  
 asteroidRocket :: World -> World
 asteroidRocket w@(World {asteroids = []}) = w
 asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{asteroids = map check listOfAsteroids, rockets = map check1 listOfRockets}
-        where
-            check asteroid | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
-                           | otherwise = asteroid{asteroidStatus = Destroyed}
-            check1 rocket | all (==False) (map (flip collisionAsteroidRocket rocket) listOfAsteroids) == True = rocket
-                          | otherwise = rocket{rocketStatus = Destroyed}
-
-        
+    where
+        check asteroid | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
+                        | otherwise = asteroid{asteroidStatus = Destroyed}
+        check1 rocket | all (==False) (map (flip collisionAsteroidRocket rocket) listOfAsteroids) == True = rocket
+                        | otherwise = rocket{rocketStatus = Destroyed}     
 -- collision Asteroid and player
 -- hitboxen passen niet best bij player model nu!!
 -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
@@ -291,11 +284,9 @@ collisionAsteroidPlayer  a@( Asteroid {asteroidLocation = (ax,ay), asteroidSize 
 asteroidPlayer :: World -> World
 asteroidPlayer w@(World {asteroids = []}) = w
 asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p, lives = l}) = w{asteroids = map fst (map check listOfAsteroids), lives = minimum (map snd (map check listOfAsteroids))}
-        where
-            check asteroid | collisionAsteroidPlayer asteroid p  == False = (asteroid,l)
-                           | otherwise = (asteroid{asteroidStatus = Destroyed},(l-1))
-
-
+    where
+        check asteroid | collisionAsteroidPlayer asteroid p  == False = (asteroid,l)
+                        | otherwise = (asteroid{asteroidStatus = Destroyed},(l-1))
 
 --player and enemy
 collisionEnemyPlayer :: Enemy -> Player -> Bool
@@ -306,14 +297,11 @@ collisionEnemyPlayer  e@( Enemy {enemyLocation = (ax,ay)}) p@(Player {playerLoca
 enemyPlayer :: World -> World
 enemyPlayer w@(World {enemies = []}) = w
 enemyPlayer w@(World {enemies = listOfenemies, player = p, lives = l}) = w{enemies = map fst (map check listOfenemies), lives = minimum (map snd (map check listOfenemies))}
-        where
-            check enemy | collisionEnemyPlayer enemy p  == False = (enemy,l)
-                        | otherwise = (enemy{enemyStatus = Destroyed},(l-1))
-
-
+    where
+        check enemy | collisionEnemyPlayer enemy p  == False = (enemy,l)
+                    | otherwise = (enemy{enemyStatus = Destroyed},(l-1))
 
 --player and enemybullet
-
 collisionBulletPlayer :: Bullet -> Player -> Bool
 collisionBulletPlayer b@(Bullet {bulletLocation= (bx,by)}) a@(Player {playerLocation = (ax,ay)})
     | ax >= (bx-32) && ax <= (bx+32) && ay >= (by-32) && ay <= (by+32) = True
@@ -322,12 +310,11 @@ collisionBulletPlayer b@(Bullet {bulletLocation= (bx,by)}) a@(Player {playerLoca
 enemyBulletPlayer :: World -> World
 enemyBulletPlayer w@(World {bullets = []}) = w
 enemyBulletPlayer w@(World {bullets = listOfbullets, player = p, lives = l}) = w{bullets = map fst (map check listOfbullets), lives = minimum (map snd (map check listOfbullets))}
-        where
-            check bullet@(Bullet {bulletAllegiance = a}) | (not(collisionBulletPlayer bullet p)) || a == Allied  = (bullet,l)
-                                                         | otherwise = (bullet{bulletStatus = Destroyed},(l-1))
+    where
+        check bullet@(Bullet {bulletAllegiance = a}) | (not(collisionBulletPlayer bullet p)) || a == Allied  = (bullet,l)
+                                                        | otherwise = (bullet{bulletStatus = Destroyed},(l-1))
 
 --enemy and playerbullet
-
 collisionEnemyBullet :: Enemy -> Bullet -> Bool
 collisionEnemyBullet e@(Enemy {enemyLocation = (ax,ay), enemyStatus = s}) b@(Bullet {bulletLocation= (bx,by), bulletAllegiance = a})
     | ax >= (bx-36.5) && ax <= (bx+36.5) && ay >= (by-36.5) && ay <= (by+36.5) && a == Allied = True
@@ -336,23 +323,23 @@ collisionEnemyBullet e@(Enemy {enemyLocation = (ax,ay), enemyStatus = s}) b@(Bul
 enemyBullet :: World -> World
 enemyBullet w@(World {enemies = []}) = w
 enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{enemies = map check listOfEnemies,bullets = map check1 listOfBullets}
-        where
-            check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) == True = enemy
-                        | otherwise = enemy{enemyStatus = Destroyed}
-            check1 bullet | all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True = bullet
-                         | otherwise = bullet{bulletStatus = Destroyed}
+    where
+        check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) == True = enemy
+                    | otherwise = enemy{enemyStatus = Destroyed}
+        check1 bullet | all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True = bullet
+                        | otherwise = bullet{bulletStatus = Destroyed}
 
 --calcscore
 scoreChecker :: World -> World
 scoreChecker w@(World {bullets = []}) = w
 scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listOfEnemies, score = s, rockets = listOfRockets}) = w{score =  maximum ((map(check1 s)listOfBullets) ++ (map (check s) listOfBullets))}
-            where 
-                check sc bullet | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = sc
-                                | otherwise = (sc + 1)
-                check1 sc bullet@(Bullet { bulletAllegiance = a}) | (all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True) = sc
-                                                                  | otherwise = (sc + 1)
+    where 
+        check sc bullet | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = sc
+                        | otherwise = (sc + 1)
+        check1 sc bullet@(Bullet { bulletAllegiance = a}) | (all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True) = sc
+                                                          | otherwise = (sc + 1)
+       
             
-
 --destroy out of bounds
 
 destroy_out_of_view_objects :: World -> World
@@ -361,15 +348,11 @@ destroy_out_of_view_objects w@(World{
     asteroids = listOfAsteroids, 
     rockets = listofRockets,
     enemies = listofEnemies}) = w{ 
-    bullets = (destroy_out_of_view_things destroy_out_of_view_bullets listOfBullets), 
-    asteroids = (destroy_out_of_view_things destroy_out_of_view_asteroids listOfAsteroids) , 
-    rockets = (destroy_out_of_view_things destroy_out_of_view_rockets listofRockets),
-    enemies = (destroy_out_of_view_things destroy_out_of_view_enemies listofEnemies)}
+    bullets = (map destroy_out_of_view_bullets listOfBullets), 
+    asteroids = (map destroy_out_of_view_asteroids listOfAsteroids) , 
+    rockets = (map destroy_out_of_view_rockets listofRockets),
+    enemies = (map destroy_out_of_view_enemies listofEnemies)}
     where 
-        destroy_out_of_view_things :: (a->a) -> [a] -> [a]
-        destroy_out_of_view_things _ [] = []
-        destroy_out_of_view_things f l = map f l
-    
         destroy_out_of_view_bullets :: Bullet -> Bullet
         destroy_out_of_view_bullets b@(Bullet {bulletLocation = (_,y)}) | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
                                                                         | otherwise = b 
@@ -400,8 +383,6 @@ removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBul
         getOnlyNotDesEnemy :: [Enemy] -> [Enemy]
         getOnlyNotDesEnemy list = [e | e@(Enemy {enemyStatus = NotDestroyed}) <- list]
     
-
-
 -- File handling
 -- Write the current score to the "scores.txt" file
 scoreToTXT :: GameState -> IO GameState
@@ -428,7 +409,6 @@ getScoreFromTXT =
 
 scoreString :: (Int, String) -> String
 scoreString (x,y) = y ++ ": " ++ show x
-
 
 readTup :: String -> (Int, String)
 readTup scoreNameTuple = (score, name)
