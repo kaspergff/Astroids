@@ -71,9 +71,9 @@ updateWorld w =
     timeToSpawnEnemybullet $
     eos $
     asteroidBullet $
-    bulletAsteroid $
+    --bulletAsteroid $
     asteroidRocket $
-    rocketAsteroid $
+    --rocketAsteroid $
     destroy_out_of_view_objects $
     removeDestroidObjects w
 
@@ -233,18 +233,20 @@ collisionBulletAsteroid b@(Bullet {bulletLocation= (bx,by)}) a@(Asteroid {locati
 
 asteroidBullet :: World -> World
 asteroidBullet w@(World {asteroids = []}) = w
-asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
+asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets}
         where
-            check asteroid | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
+            check asteroid  | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
                             | otherwise = asteroid{status = Destroyed}
-                            
+            check2 bullet   | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
+                            | otherwise = bullet{bulletStatus = Destroyed}
+{--                            
 bulletAsteroid :: World -> World
 bulletAsteroid w@(World {bullets = []}) = w
 bulletAsteroid w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{bullets = map check listOfBullets}
             where 
                 check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
                                 | otherwise = bullet{bulletStatus = Destroyed}
-
+--}
 --asteroid and rocket
 collisionAsteroidRocket :: Asteroid -> Rocket -> Bool
 collisionAsteroidRocket a@(Asteroid {location = (ax,ay), status = s, size = si}) b@(Rocket {rockLocation = (bx,by)}) 
@@ -258,18 +260,20 @@ collisionRocketAsteroid b@(Rocket {rockLocation= (bx,by)}) a@(Asteroid {location
 
 asteroidRocket :: World -> World
 asteroidRocket w@(World {asteroids = []}) = w
-asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{asteroids = map check listOfAsteroids}
+asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{asteroids = map check listOfAsteroids, rockets = map check2 listOfRockets}
         where
-            check asteroid | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
+            check asteroid  | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
                             | otherwise = asteroid{status = Destroyed}
-                            
+            check2 rocket   | all (==False) (map (collisionRocketAsteroid rocket) listOfAsteroids) == True = rocket
+                            | otherwise = rocket{rocketStatus = Destroyed}
+{--                            
 rocketAsteroid :: World -> World
 rocketAsteroid w@(World {rockets = []}) = w
 rocketAsteroid w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{rockets = map check listOfRockets}
             where 
-                check rocket | all (==False) (map (collisionRocketAsteroid rocket) listOfAsteroids) == True = rocket
+                check2 rocket | all (==False) (map (collisionRocketAsteroid rocket) listOfAsteroids) == True = rocket
                                 | otherwise = rocket{rocketStatus = Destroyed}
-
+--}
 --player and asteroid
 removeDestroidObjects :: World -> World
 removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, rockets = listofRockets, enemies = listofEnemies}) = w{
