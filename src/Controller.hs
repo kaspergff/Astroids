@@ -205,7 +205,6 @@ generateVectorAsteroid g = let (v1, g1) = randomR ((-4), 4) g
 getVectorAsteroid :: RandomGen g => ((Float, Float), g) -> (Float, Float)
 getVectorAsteroid ((x, y), _) = (x,y)
 
-
     -- random nummer generatie   
 getGen :: (Float, StdGen) -> StdGen
 getGen (_, g) = g
@@ -343,19 +342,18 @@ enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{ene
         check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) == True = enemy
                     | otherwise = enemy{enemyStatus = Destroyed}
         check1 bullet | all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True = bullet
-                        | otherwise = bullet{bulletStatus = Destroyed}
+                      | otherwise = bullet{bulletStatus = Destroyed}
 
 --calcscore
 scoreChecker :: World -> World
 scoreChecker w@(World {bullets = []}) = w
-scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listOfEnemies, score = s, rockets = listOfRockets}) = w{score =  maximum ((map(check1 s)listOfBullets) ++ (map (check s) listOfBullets))}
+scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listOfEnemies, score = s}) = w{score =  maximum ((map(check1 s)listOfBullets) ++ (map (check s) listOfBullets)) }
     where 
         check sc bullet | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = sc
                         | otherwise = (sc + 1)
         check1 sc bullet@(Bullet { bulletAllegiance = a}) | (all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True) = sc
                                                           | otherwise = (sc + 1)
        
-            
 --destroy out of bounds
 
 destroy_out_of_view_objects :: World -> World
