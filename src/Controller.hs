@@ -112,7 +112,7 @@ isPaused w@(World {pause = paused})
 --kunnen meer ettapes toevoegen
 eos :: World -> World
 eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w
-                                                | s >= 20  = timeToSpawnEnemy w
+                                                | s >= 20  = timeToSpawnEnemy $ timeToSpawnAsteroid w
 
 timeToSpawnEnemy :: World -> World
 timeToSpawnEnemy w@(World {enemyTimer = time}) 
