@@ -112,11 +112,14 @@ isPaused w@(World {pause = paused})
 --kunnen meer ettapes toevoegen
 eos :: World -> World
 eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w
-                                                | s >= 20  = timeToSpawnEnemy $ timeToSpawnAsteroid w
+                                                | s >= 20 && s <  40 = timeToSpawnEnemy False $ timeToSpawnAsteroid w
+                                                | s > 40 =timeToSpawnEnemy True $ timeToSpawnAsteroid w
 
-timeToSpawnEnemy :: World -> World
-timeToSpawnEnemy w@(World {enemyTimer = time}) 
-    | time < 1 = spawnEnemy w{ enemyTimer = 70}
+
+timeToSpawnEnemy :: Bool -> World -> World
+timeToSpawnEnemy f w@(World {enemyTimer = time}) 
+    | f==False && time < 1 = spawnRandomEnemy w{ enemyTimer = 70}
+    | time < 1 = spawnAttackEnemy w{ enemyTimer = 70}
     | otherwise = w {enemyTimer = time - 1}     
 
 --enemies (experimental)
@@ -126,8 +129,12 @@ updateEnemies w@(World {enemies = listOfEnemies}) = w{enemies = map updateEnemy 
 updateEnemy :: Enemy -> Enemy
 updateEnemy e@(Enemy{ enemyLocation = (x,y), enemySpeed = s}) = e{enemyLocation = (x,y+s)}
 
-spawnEnemy :: World -> World
-spawnEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (getFirstNumber(generateTreeNumbers g)) ], asteroidsSpawnGenerator = getSeed(generateTreeNumbers g) }
+spawnRandomEnemy :: World -> World
+spawnRandomEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (getFirstNumber(generateTreeNumbers g)) ], asteroidsSpawnGenerator = getSeed(generateTreeNumbers g) }
+
+spawnAttackEnemy :: World -> World
+spawnAttackEnemy w@(World {enemies = listOfEnemies, player = p@(Player {playerLocation = (x,y)})}) = w{enemies = listOfEnemies ++ [createEnemy x ]}
+
 
 createEnemy :: Float-> Enemy
 createEnemy x = Enemy (x,200) NotDestroyed (-3)
