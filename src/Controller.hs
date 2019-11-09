@@ -62,6 +62,8 @@ updateWorld w =
     scoreChecker $
     updateAsteroids $
     updateEnemies $ 
+    enemyPlayer $
+    enemyBulletPlayer $
     timeToSpawnEnemybullet $
     eos $
     asteroidBullet $
@@ -302,11 +304,62 @@ asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p, lives = l}) = 
 
 
 
---player and enemey
+--player and enemy
+collisionEnemyPlayer :: Enemy -> Player -> Bool
+collisionEnemyPlayer  e@( Enemy {enemyLocation = (ax,ay)}) p@(Player {playerlocation = (px,py)}) 
+    | ax >= (px-36) && ax <= (px+36) && ay >= (py-35) && ay <= (py+35) = True
+    | otherwise = False  
+
+enemyPlayer :: World -> World
+enemyPlayer w@(World {enemies = []}) = w
+enemyPlayer w@(World {enemies = listOfenemies, player = p, lives = l}) = w{enemies = map fst (map check listOfenemies), lives = minimum (map snd (map check listOfenemies))}
+        where
+            check enemy | collisionEnemyPlayer enemy p  == False = (enemy,l)
+                        | otherwise = (enemy{estatus = Destroyed},(l-1))
+
+
 
 --player and enemybullet
 
+collisionBulletPlayer :: Bullet -> Player -> Bool
+collisionBulletPlayer b@(Bullet {bulletLocation= (bx,by)}) a@(Player {playerlocation = (ax,ay)})
+    | ax >= (bx-32) && ax <= (bx+32) && ay >= (by-32) && ay <= (by+32) = True
+    | otherwise = False    
+                            
+enemyBulletPlayer :: World -> World
+enemyBulletPlayer w@(World {bullets = []}) = w
+enemyBulletPlayer w@(World {bullets = listOfbullets, player = p, lives = l}) = w{bullets = map fst (map check listOfbullets), lives = minimum (map snd (map check listOfbullets))}
+        where
+            check bullet@(Bullet {bulletallegiance = a}) | (not(collisionBulletPlayer bullet p)) || a == Allied  = (bullet,l)
+                                                         | otherwise = (bullet{bulletStatus = Destroyed},(l-1))
+
 --enemy and playerbullet
+{-
+collisionEnemyBullet :: Enemy -> Bullet -> Bool
+collisionEnemyBullet e@(Enemy {enemyLocation = (ax,ay), estatus = s}) b@(Bullet {bulletLocation= (bx,by)})
+    | ax >= (bx-35) && ax <= (bx+35) && ay >= (by-35) && ay <= (by+35) = True
+    | otherwise = False
+
+
+collisionBulletEnemy :: Bullet -> Enemy -> Bool
+collisionBulletEnemy b@(Bullet {bulletLocation= (bx,by)}) a@(Asteroid {location = (ax,ay), status = s, size = si})
+    | ax >= (bx-35) && ax <= (bx+35) && ay >= (by-35) && ay <= (by+35) = True
+    | otherwise = False    
+
+enemyBullet :: World -> World
+enemyBullet w@(World {enemies = []}) = w
+enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{enemies = map check listOfEnemies}
+        where
+            check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) == True = enemy
+                        | otherwise = enemy{estatus = Destroyed}
+                    
+bulletEnemy :: World -> World
+bulletEnemy w@(World {bullets = []}) = w
+bulletEnemy w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{bullets = map check listOfBullets}
+            where 
+                check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
+                                | otherwise = bullet{bulletStatus = Destroyed}
+-}
 
 --calcscore
 scoreChecker :: World -> World
