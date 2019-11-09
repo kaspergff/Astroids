@@ -113,7 +113,7 @@ isPaused w@(World {pause = paused})
 eos :: World -> World
 eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w
                                                 | s >= 20 && s <  40 = timeToSpawnEnemy False $ timeToSpawnAsteroid w
-                                                | s > 40 =timeToSpawnEnemy True $ timeToSpawnAsteroid w
+                                                | s >= 40 = timeToSpawnEnemy True $ timeToSpawnAsteroid w
 
 
 timeToSpawnEnemy :: Bool -> World -> World
