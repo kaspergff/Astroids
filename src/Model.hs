@@ -4,6 +4,7 @@ module Model where
 
     import System.Random
     import Graphics.Gloss
+    import Linear.V2
 
     data InfoToShow = ShowNothing
                     | ShowWorld World
@@ -26,14 +27,14 @@ module Model where
                 bullets                 :: [Bullet],
                 rockets                 :: [Rocket],
                 asteroids               :: [Asteroid],
-                enemies                 ::  [Enemy],
+                enemies                 :: [Enemy],
                 asteroidTimer           :: Int,
                 enemyTimer              :: Int,
                 asteroidsSpawnGenerator :: StdGen,
                 oneThreeGenerator       :: StdGen,
                 oneFiveGenerator        :: StdGen,
                 score                   :: Int,
-                lives                   ::  Int,
+                lives                   :: Int,
                 sprites                 :: [Picture],
                 schooterTimer           :: Int
                 }
@@ -95,3 +96,18 @@ module Model where
                 
     initialState :: StdGen -> StdGen -> StdGen -> [Picture] -> GameState
     initialState esg otg ofg spr = GameState (ShowWorld(initial_world esg otg ofg spr)) (initial_world esg otg ofg spr) 0 False
+  
+    data Particle = Particle
+              { 
+              _age          :: Float, 
+              _lifespan     :: Float, 
+              _position     :: V2 Float,
+              _velocity     :: V2 Float,
+              _acceleration :: V2 Float 
+              }
+              deriving ( Show )
+
+    type Cluster = [Particle]
+    
+
+   
