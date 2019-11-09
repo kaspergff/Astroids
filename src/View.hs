@@ -18,9 +18,7 @@ module View where
       ShowNothing       -> blank
       ShowWorld world   -> drawWorld world
       ShowDeathscreen world  -> drawDeathscreen world
-  
-
-
+      
     -- Main draw function
     drawWorld :: World -> Picture
     drawWorld w = Pictures
