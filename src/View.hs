@@ -31,7 +31,7 @@ module View where
 
     drawPlane :: World -> Picture
     --origineel 512x512 dus nu ong 64 bij 64
-    drawPlane w@(World {player = p@(Player {playerlocation = (x,y)}), sprites = s}) = (translate x y (scale 0.125 0.125 (s!!0)))
+    drawPlane w@(World {player = p@(Player {playerLocation = (x,y)}), sprites = s}) = (translate x y (scale 0.125 0.125 (s!!0)))
     
     drawEnemies :: World -> [Picture]
     drawEnemies w@(World {enemies = listOfEnemies, sprites = s}) = map (drawEnemy (s!!2)) listOfEnemies
@@ -52,7 +52,7 @@ module View where
     drawrockets w@(World {rockets = listOfRockets}) = map drawrocket listOfRockets
 
     drawrocket :: Rocket -> Picture
-    drawrocket Rocket {rockLocation = (x,y), rocketStatus = s} = translate x y rocket 
+    drawrocket Rocket {rocketLocation = (x,y), rocketStatus = s} = translate x y rocket 
 
     rocket :: Picture
     rocket = color green $ Polygon [(-1,10),(1,10),(1,0),(-1,0),(-1,5)]
@@ -61,7 +61,7 @@ module View where
     drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids
 
     drawAsteroid :: Asteroid -> Picture
-    drawAsteroid Asteroid{ location = (x,y) , status = s, size = si} = translate x y (asteroid si)
+    drawAsteroid Asteroid{ asteroidLocation = (x,y) , asteroidStatus = s, asteroidSize = si} = translate x y (asteroid si)
 
     asteroid :: Float -> Picture
     asteroid a =  color white $ Line [(0*a,0*a), (5*a,4*a), (6*a,7*a), (4*a,9*a), (-3*a, 12*a), (-8*a,7*a),(-6*a,3*a),(0*a,0*a)]
