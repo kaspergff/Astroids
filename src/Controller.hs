@@ -112,11 +112,14 @@ isPaused w@(World {pause = paused})
 --kunnen meer ettapes toevoegen
 eos :: World -> World
 eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w
-                                                | s >= 20  = timeToSpawnEnemy w
+                                                | s >= 20 && s <  40 = timeToSpawnEnemy False $ timeToSpawnAsteroid w
+                                                | s >= 40 = timeToSpawnEnemy True $ timeToSpawnAsteroid w
 
-timeToSpawnEnemy :: World -> World
-timeToSpawnEnemy w@(World {enemyTimer = time}) 
-    | time < 1 = spawnEnemy w{ enemyTimer = 70}
+
+timeToSpawnEnemy :: Bool -> World -> World
+timeToSpawnEnemy f w@(World {enemyTimer = time}) 
+    | f==False && time < 1 = spawnRandomEnemy w{ enemyTimer = 70}
+    | time < 1 = spawnAttackEnemy w{ enemyTimer = 70}
     | otherwise = w {enemyTimer = time - 1}     
 
 --enemies (experimental)
@@ -126,8 +129,12 @@ updateEnemies w@(World {enemies = listOfEnemies}) = w{enemies = map updateEnemy 
 updateEnemy :: Enemy -> Enemy
 updateEnemy e@(Enemy{ enemyLocation = (x,y), enemySpeed = s}) = e{enemyLocation = (x,y+s)}
 
-spawnEnemy :: World -> World
-spawnEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (getFirstNumber(generateTreeNumbers g)) ], asteroidsSpawnGenerator = getSeed(generateTreeNumbers g) }
+spawnRandomEnemy :: World -> World
+spawnRandomEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (getFirstNumber(generateTreeNumbers g)) ], asteroidsSpawnGenerator = getSeed(generateTreeNumbers g) }
+
+spawnAttackEnemy :: World -> World
+spawnAttackEnemy w@(World {enemies = listOfEnemies, player = p@(Player {playerLocation = (x,y)})}) = w{enemies = listOfEnemies ++ [createEnemy x ]}
+
 
 createEnemy :: Float-> Enemy
 createEnemy x = Enemy (x,200) NotDestroyed (-3)
@@ -360,28 +367,28 @@ destroy_out_of_view_objects w@(World{
     enemies = (map destroy_out_of_view_enemies listofEnemies)}
     where 
         destroy_out_of_view_bullets :: Bullet -> Bullet
-        destroy_out_of_view_bullets b@(Bullet {bulletLocation = (_,y)}) | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
+        destroy_out_of_view_bullets b@Bullet {bulletLocation = (_,y)} | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
                                                                         | otherwise = b 
         destroy_out_of_view_asteroids :: Asteroid -> Asteroid
-        destroy_out_of_view_asteroids a@(Asteroid {asteroidLocation = (_,y), asteroidSize = si}) | y < (-200-6*si) = a{asteroidStatus = Destroyed}
+        destroy_out_of_view_asteroids a@Asteroid {asteroidLocation = (_,y), asteroidSize = si} | y < (-200-6*si) = a{asteroidStatus = Destroyed}
                                                                                                 | otherwise = a
         destroy_out_of_view_enemies :: Enemy -> Enemy
-        destroy_out_of_view_enemies e@(Enemy{enemyLocation = (_,y)}) | y < (-220) = e{enemyStatus = Destroyed}
+        destroy_out_of_view_enemies e@Enemy{enemyLocation = (_,y)} | y < (-220) = e{enemyStatus = Destroyed}
                                                  | otherwise = e
 --remove destroyed stuff
 removeDestroidObjects :: World -> World
-removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listofEnemies}) = w{
+removeDestroidObjects w@World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listofEnemies} = w{
     asteroids = getOnlyNotDesAst listOfAsteroids,
     bullets = getOnlyNotDesBul listOfBullets,
     enemies = getOnlyNotDesEnemy listofEnemies
     }
     where
         getOnlyNotDesAst :: [Asteroid] -> [Asteroid]
-        getOnlyNotDesAst list = [a | a@(Asteroid {asteroidStatus = NotDestroyed}) <- list]
+        getOnlyNotDesAst list = [a | a@Asteroid {asteroidStatus = NotDestroyed} <- list]
         getOnlyNotDesBul :: [Bullet] -> [Bullet]
-        getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
+        getOnlyNotDesBul list = [b | b@Bullet {bulletStatus = NotDestroyed} <- list]
         getOnlyNotDesEnemy :: [Enemy] -> [Enemy]
-        getOnlyNotDesEnemy list = [e | e@(Enemy {enemyStatus = NotDestroyed}) <- list]
+        getOnlyNotDesEnemy list = [e | e@Enemy {enemyStatus = NotDestroyed} <- list]
     
 -- File handling
 -- Write the current score to the "scores.txt" file
@@ -391,7 +398,7 @@ scoreToTXT gstate@(GameState{world = w@(World {score = p})})  =
         name <- getLine
         f <- readFile "scores.txt"
         let scores = f ++ ['\n'] ++ show p ++ name
-        when (length scores > 0) $ writeFile "scores.txt" scores
+        when (not (null scores)) $ writeFile "scores.txt" scores
         return gstate
 
 getScoreFromTXT :: IO [String]
@@ -400,7 +407,7 @@ getScoreFromTXT =
         f <- readFile "scores.txt"
         getsrc f 
     where
-        getsrc c | (length c > 1) = do
+        getsrc c | length c > 1 = do
                                 let content =  lines c
                                     tups = map readTup content
                                     stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
