@@ -179,7 +179,6 @@ spawnRock w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g}) =w{rocks 
 createRock :: Point -> Vector -> Rock
 createRock p v = Rock p v 4 NotDestroyed
 
-
 timeToSpawnAsteroid :: World -> World
 timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
     | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
