@@ -13,9 +13,10 @@ module Model where
     nO_SECS_BETWEEN_CYCLES = 5
     
     data GameState = GameState {
-                       infoToShow  :: InfoToShow,
-                       world       :: World,
-                       elapsedTime :: Float
+                       infoToShow  :: InfoToShow
+                     , world       :: World
+                     , elapsedTime :: Float
+                     , scoreSaved  :: Bool
                      
                      }
 
@@ -89,4 +90,4 @@ module Model where
     initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 spr 40
                 
     initialState :: StdGen -> StdGen -> StdGen -> [Picture] -> GameState
-    initialState esg otg ofg spr = GameState (ShowWorld(initial_world esg otg ofg spr)) (initial_world esg otg ofg spr) 0 
+    initialState esg otg ofg spr = GameState (ShowWorld(initial_world esg otg ofg spr)) (initial_world esg otg ofg spr) 0 False

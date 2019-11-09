@@ -8,12 +8,18 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
 import System.Environment
+import Control.Monad (when)
+import Data.Function (on)
+import Data.List (sortBy)
 
 
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate  
-    | (isdead $ player $ world gstate) == Dead = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
+    | (isdead $ player $ world gstate) == Dead && scoreSaved gstate == False = do 
+        scoreToTXT $ gstate
+        return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate, scoreSaved = True}
+    | (isdead $ player $ world gstate) == Dead && scoreSaved gstate = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
     | (isPaused $ world gstate) == True = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
     | otherwise = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
 
@@ -37,19 +43,19 @@ inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(Worl
 inputKey (EventKey (SpecialKey (KeyUp)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
 inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
 -}
-inputKey (EventKey (Char ('w')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
-inputKey (EventKey (Char ('a')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = LeftMovement}}}
-inputKey (EventKey (Char ('s')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}
-inputKey (EventKey (Char ('d')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = RightMovement}}}
-inputKey (EventKey (Char ('e')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UprightMovement}}}
-inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpleftMovement}}}
+inputKey (EventKey (Char ('w')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = UpMovement}}}
+inputKey (EventKey (Char ('a')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = LeftMovement}}}
+inputKey (EventKey (Char ('s')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = DownMovement}}}
+inputKey (EventKey (Char ('d')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = RightMovement}}}
+inputKey (EventKey (Char ('e')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = UprightMovement}}}
+inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = UpleftMovement}}}
 
 --bullet
-inputKey (EventKey (Char ('m')) _ _ _) gstate@(GameState _ w@(World {rockets = l}) _) = gstate {world = (spawnRocket w)}
-inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _) = gstate {world = (spawnBullet w)}
+inputKey (EventKey (Char ('m')) _ _ _) gstate@(GameState _ w@(World {rockets = l}) _ _) = gstate {world = (spawnRocket w)}
+inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _ _) = gstate {world = (spawnBullet w)}
 inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
 inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
-inputKey _ gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = NoMovement}}}
+inputKey _ gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = NoMovement}}}
 
 updateWorld :: World -> World
 updateWorld w = 
@@ -403,4 +409,34 @@ destroy_out_of_view_objects w = w{
         check3 e@(Enemy{enemyLocation = (_,y)}) | y < (-220) = e{estatus = Destroyed}
                                                  | otherwise = e
 
- 
+-- File handling
+-- Write the current score to the "scores.txt" file
+scoreToTXT :: GameState -> IO GameState
+scoreToTXT gstate@(GameState{world = w@(World {score = p})})  = 
+    do
+        name <- getLine
+        f <- readFile "scores.txt"
+        let scores = f ++ ['\n'] ++ show p ++ name
+        when (length scores > 0) $ writeFile "scores.txt" scores
+        return gstate
+
+--Read the highscores from the "scores.txt" file
+getScoreFromTXT :: IO [String]
+getScoreFromTXT = 
+    do
+        f <- readFile "scores.txt"
+        if (length f > 1) then do
+            let content =  lines f
+                tups = map readTup content
+                stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
+                scores = map scoreString stups
+            return (reverse scores)
+        else return []
+
+scoreString :: (Int, String) -> String
+scoreString (x,y) = y ++ ": " ++ show x
+
+
+readTup :: String -> (Int, String)
+readTup scoreNameTuple = (score, name)
+    where [(score, name)] = reads scoreNameTuple
