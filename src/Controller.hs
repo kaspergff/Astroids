@@ -50,7 +50,6 @@ inputKey (EventKey (Char ('e')) Down _ _) gstate@(GameState _ w@(World{player = 
 inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = UpleftMovement}}}
 
 --bullet
-inputKey (EventKey (Char ('m')) _ _ _) gstate@(GameState _ w@(World {rockets = l}) _ _) = gstate {world = (spawnRocket w)}
 inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _ _) = gstate {world = (spawnBullet w)}
 inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
 inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
@@ -62,7 +61,6 @@ updateWorld w =
     checklive $
     asteroidPlayer $
     planeOnScreen $ 
-    updateRockets $
     updateBullets $
     scoreChecker $
     updateAsteroids $
@@ -74,7 +72,6 @@ updateWorld w =
     keepAsteroidsOnScreen $
     asteroidBullet $
     enemyBullet $
-    asteroidRocket $
     destroy_out_of_view_objects $
     spawnRock $
     moveRocks $
@@ -135,19 +132,6 @@ spawnEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w
 
 createEnemy :: Float-> Enemy
 createEnemy x = Enemy (x,200) NotDestroyed (-3)
-
--- rockets bitches
-updateRockets :: World -> World
-updateRockets w@(World {rockets = listOfRockets}) = w{rockets = map updateRocket listOfRockets}
-
-updateRocket :: Rocket -> Rocket
-updateRocket r@(Rocket{ rocketLocation = (x,y), rocketSpeed = s}) = r{ rocketLocation = (x,(y+s)), rocketSpeed = s}
-
-spawnRocket :: World -> World
-spawnRocket w@(World {player = p@(Player {playerLocation = (x,y)}), rockets = listOfRockets}) = w{rockets = listOfRockets ++ [(createRocket ((x-10),y))] ++ [(createRocket ((x+10),y))]  }
-
-createRocket :: Point -> Rocket
-createRocket (x,y) = Rocket (x,y) 15 NotDestroyed
 
 -- Update all asteroids    
 updateAsteroids :: World -> World
@@ -295,22 +279,6 @@ asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) 
         check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = bullet
                         | otherwise = bullet{bulletStatus = Destroyed}
 
---asteroid and rocket
-collisionAsteroidRocket :: Asteroid -> Rocket -> Bool
-collisionAsteroidRocket a@(Asteroid {asteroidLocation = (ax,ay), asteroidStatus = s, asteroidSize = si}) b@(Rocket {rocketLocation = (bx,by)}) 
-    | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
-    | otherwise = False
-  
-asteroidRocket :: World -> World
-asteroidRocket w@(World {asteroids = []}) = w
-asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{asteroids = map check listOfAsteroids, rockets = map check1 listOfRockets}
-    where
-        check asteroid | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
-                        | otherwise = asteroid{asteroidStatus = Destroyed}
-        check1 rocket | all (==False) (map (flip collisionAsteroidRocket rocket) listOfAsteroids) == True = rocket
-                        | otherwise = rocket{rocketStatus = Destroyed}   
-                        
-
 -- collision Asteroid and player
 -- hitboxen passen niet best bij player model nu!!
 -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
@@ -384,11 +352,9 @@ destroy_out_of_view_objects :: World -> World
 destroy_out_of_view_objects w@(World{
     bullets = listOfBullets, 
     asteroids = listOfAsteroids, 
-    rockets = listofRockets,
     enemies = listofEnemies}) = w{ 
     bullets = (map destroy_out_of_view_bullets listOfBullets), 
     asteroids = (map destroy_out_of_view_asteroids listOfAsteroids) , 
-    rockets = (map destroy_out_of_view_rockets listofRockets),
     enemies = (map destroy_out_of_view_enemies listofEnemies)}
     where 
         destroy_out_of_view_bullets :: Bullet -> Bullet
@@ -397,18 +363,14 @@ destroy_out_of_view_objects w@(World{
         destroy_out_of_view_asteroids :: Asteroid -> Asteroid
         destroy_out_of_view_asteroids a@(Asteroid {asteroidLocation = (_,y), asteroidSize = si}) | y < (-200-6*si) = a{asteroidStatus = Destroyed}
                                                                                                 | otherwise = a
-        destroy_out_of_view_rockets :: Rocket-> Rocket
-        destroy_out_of_view_rockets r@(Rocket{rocketLocation = (_,y)}) | y > 200 = r{rocketStatus = Destroyed}
-                                                | otherwise = r
         destroy_out_of_view_enemies :: Enemy -> Enemy
         destroy_out_of_view_enemies e@(Enemy{enemyLocation = (_,y)}) | y < (-220) = e{enemyStatus = Destroyed}
                                                  | otherwise = e
 --remove destroyed stuff
 removeDestroidObjects :: World -> World
-removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, rockets = listofRockets, enemies = listofEnemies}) = w{
+removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listofEnemies}) = w{
     asteroids = getOnlyNotDesAst listOfAsteroids,
     bullets = getOnlyNotDesBul listOfBullets,
-    rockets = getOnlyNotDesRock listofRockets,
     enemies = getOnlyNotDesEnemy listofEnemies
     }
     where
@@ -416,8 +378,6 @@ removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBul
         getOnlyNotDesAst list = [a | a@(Asteroid {asteroidStatus = NotDestroyed}) <- list]
         getOnlyNotDesBul :: [Bullet] -> [Bullet]
         getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
-        getOnlyNotDesRock :: [Rocket] -> [Rocket]
-        getOnlyNotDesRock list = [r | r@(Rocket {rocketStatus = NotDestroyed}) <- list]
         getOnlyNotDesEnemy :: [Enemy] -> [Enemy]
         getOnlyNotDesEnemy list = [e | e@(Enemy {enemyStatus = NotDestroyed}) <- list]
     
@@ -435,19 +395,17 @@ scoreToTXT gstate@(GameState{world = w@(World {score = p})})  =
 getScoreFromTXT :: IO [String]
 getScoreFromTXT = 
     do
-      f <- readFile "scores.txt"
-      if (length f > 1) then do
-        let content =  lines f
-            tups = map readTup content
-            stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
-            scores = map scoreString stups
-        return (reverse scores)
-      else return []
-
-getIOString :: IO String
-getIOString = do f <- readFile "scores.txt"
-                 return f
-
+        f <- readFile "scores.txt"
+        getsrc f 
+    where
+        getsrc c | (length c > 1) = do
+                                let content =  lines c
+                                    tups = map readTup content
+                                    stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
+                                    scores = map scoreString stups
+                                return (reverse scores)
+                | otherwise = return []
+        
 
 scoreString :: (Int, String) -> String
 scoreString (x,y) = y ++ ": " ++ show x

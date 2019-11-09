@@ -25,7 +25,6 @@ module Model where
                 player                  :: Player,
                 pause                   :: PauseorPlay,
                 bullets                 :: [Bullet],
-                rockets                 :: [Rocket],
                 asteroids               :: [Asteroid],
                 enemies                 :: [Enemy],
                 asteroidTimer           :: Int,
@@ -55,12 +54,6 @@ module Model where
                 }
     
     data AlliedOrNot = Allied | Notallied deriving (Eq)
-
-    data Rocket = Rocket {
-                rocketLocation :: Point,            
-                rocketSpeed    :: Float,
-                rocketStatus   :: DestroyedOrNot
-                }
 
     data Asteroid = Asteroid {
                     asteroidLocation :: Point,
