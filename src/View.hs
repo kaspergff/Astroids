@@ -24,7 +24,7 @@ module View where
     drawWorld w = Pictures
         (drawAsteroids w ++
          drawEnemies w ++
-        drawbullets w ++ drawrockets w ++ [drawPlane w] ++ drawScore w ++ drawLives w 
+        drawbullets w ++ [drawPlane w] ++ drawScore w ++ drawLives w 
         )
 
     drawPlane :: World -> Picture
@@ -45,15 +45,6 @@ module View where
                                                           
     bullet :: Picture
     bullet = color blue $ ThickCircle 1 2
-
-    drawrockets :: World -> [Picture]
-    drawrockets w@(World {rockets = listOfRockets}) = map drawrocket listOfRockets
-
-    drawrocket :: Rocket -> Picture
-    drawrocket Rocket {rocketLocation = (x,y), rocketStatus = s} = translate x y rocket 
-
-    rocket :: Picture
-    rocket = color green $ Polygon [(-1,10),(1,10),(1,0),(-1,0),(-1,5)]
 
     drawAsteroids :: World -> [Picture]
     drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids

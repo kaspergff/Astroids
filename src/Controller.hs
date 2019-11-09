@@ -373,13 +373,16 @@ getScoreFromTXT :: IO [String]
 getScoreFromTXT = 
     do
         f <- readFile "scores.txt"
-        if (length f > 1) then do
-            let content =  lines f
-                tups = map readTup content
-                stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
-                scores = map scoreString stups
-            return (reverse scores)
-        else return []
+        getsrc f 
+    where
+        getsrc c | (length c > 1) = do
+                                let content =  lines c
+                                    tups = map readTup content
+                                    stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
+                                    scores = map scoreString stups
+                                return (reverse scores)
+                | otherwise = return []
+        
 
 scoreString :: (Int, String) -> String
 scoreString (x,y) = y ++ ": " ++ show x

@@ -25,7 +25,6 @@ module Model where
                 player                  :: Player,
                 pause                   :: PauseorPlay,
                 bullets                 :: [Bullet],
-                rockets                 :: [Rocket],
                 asteroids               :: [Asteroid],
                 enemies                 :: [Enemy],
                 asteroidTimer           :: Int,
@@ -57,12 +56,6 @@ module Model where
     
     data AlliedOrNot = Allied | Notallied deriving (Eq)
 
-    data Rocket = Rocket {
-                rocketLocation :: Point,            
-                rocketSpeed    :: Float,
-                rocketStatus   :: DestroyedOrNot
-                }
-
     data Asteroid = Asteroid {
                     asteroidLocation :: Point,
                     asteroidSize     :: Float,
@@ -90,7 +83,7 @@ module Model where
     data Aliveornot = Alive | Dead deriving (Eq)--for the player
     
     initial_world :: StdGen -> StdGen -> StdGen -> [Picture] -> World
-    initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 spr 40
+    initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] 0 0 esg otg ofg 0 3 spr 40
                 
     initialState :: StdGen -> StdGen -> StdGen -> [Picture] -> GameState
     initialState esg otg ofg spr = GameState (ShowWorld(initial_world esg otg ofg spr)) (initial_world esg otg ofg spr) 0 False
