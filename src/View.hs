@@ -63,7 +63,10 @@ module View where
     drawRocks w@(World {rocks = listOfRocks}) = map drawRock listOfRocks
 
     drawRock :: Rock -> Picture
-    drawRock Rock{rockLocation = (x,y)} = translate x y (color white $ ThickCircle 1 3)
+    drawRock Rock{rockLocation = (x,y)} = translate x y (scale 0.5 0.5 (rock))
+
+    rock :: Picture
+    rock = color white $ Line [(0,0), (5,4), (6,7), (4,9), (-3, 12), (-8,7),(-6,3),(0,0)]
 
     drawScore :: World -> [Picture]
     drawScore w@(World {score = s}) = [(scale 0.2 0.2 (translate 500 800 (color white $ Text (show s))))]
