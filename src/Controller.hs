@@ -3,7 +3,6 @@
 module Controller where
 
 import Model
-
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
@@ -11,7 +10,6 @@ import System.Environment
 import Control.Monad (when)
 import Data.Function (on)
 import Data.List (sortBy)
-import Linear.V2
 
 
 -- | Handle one iteration of the game
@@ -286,7 +284,9 @@ asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) 
         check asteroid | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
                         | otherwise = asteroid{asteroidStatus = Destroyed}
         check1 rocket | all (==False) (map (flip collisionAsteroidRocket rocket) listOfAsteroids) == True = rocket
-                        | otherwise = rocket{rocketStatus = Destroyed}     
+                        | otherwise = rocket{rocketStatus = Destroyed}   
+                        
+
 -- collision Asteroid and player
 -- hitboxen passen niet best bij player model nu!!
 -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        

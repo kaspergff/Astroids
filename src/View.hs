@@ -5,7 +5,7 @@ module View where
     import Graphics.Gloss
     import Model
     import Controller
-    
+
     view :: GameState -> IO Picture
     view gstate@(GameState {world = w@(World {score = points})}) = do
       let p = viewPure gstate
@@ -18,7 +18,7 @@ module View where
       ShowNothing       -> blank
       ShowWorld world   -> drawWorld world
       ShowDeathscreen world  -> drawDeathscreen world
-      
+
     -- Main draw function
     drawWorld :: World -> Picture
     drawWorld w = Pictures
