@@ -13,67 +13,67 @@ module Model where
     nO_SECS_BETWEEN_CYCLES = 5
     
     data GameState = GameState {
-                       infoToShow  :: InfoToShow
-                     , world       :: World
-                     , elapsedTime :: Float
-                     , scoreSaved  :: Bool
+                       infoToShow  :: InfoToShow,
+                       world       :: World,
+                       elapsedTime :: Float,
+                       scoreSaved  :: Bool
                      
                      }
 
     data World = World {
-                player  :: Player,
-                pause   :: PauseorPlay,
-                bullets     :: [Bullet],
-                rockets     :: [Rocket],
-                asteroids   :: [Asteroid],
-                enemies     ::  [Enemy],
-                asteroidTimer   :: Int,
-                enemyTimer :: Int,
+                player                  :: Player,
+                pause                   :: PauseorPlay,
+                bullets                 :: [Bullet],
+                rockets                 :: [Rocket],
+                asteroids               :: [Asteroid],
+                enemies                 ::  [Enemy],
+                asteroidTimer           :: Int,
+                enemyTimer              :: Int,
                 asteroidsSpawnGenerator :: StdGen,
-                oneThreeGenerator :: StdGen,
-                oneFiveGenerator :: StdGen,
-                score         :: Int,
-                lives         ::  Int,
-                sprites       :: [Picture],
-                schooterTimer :: Int
+                oneThreeGenerator       :: StdGen,
+                oneFiveGenerator        :: StdGen,
+                score                   :: Int,
+                lives                   ::  Int,
+                sprites                 :: [Picture],
+                schooterTimer           :: Int
                 }
 
 
     -- player
     data Player = Player {
-                playerlocation  :: Point,
-                movement        :: Movement,
-                playerstatus          :: Aliveornot
+                playerLocation :: Point,
+                movement       :: Movement,
+                playerStatus   :: Aliveornot
                 }
 
     -- bullets
 
     data Bullet = Bullet {
-                bulletLocation :: Point,            
-                speed :: Float,
-                bulletStatus :: DestroyedOrNot,
-                bulletallegiance :: AlliedOrNot
+                bulletLocation   :: Point,            
+                bulletSpeed      :: Float,
+                bulletStatus     :: DestroyedOrNot,
+                bulletAllegiance :: AlliedOrNot
                 }
     
     data AlliedOrNot = Allied | Notallied deriving (Eq)
 
     data Rocket = Rocket {
-                rockLocation :: Point,            
-                rspeed :: Float,
-                rocketStatus :: DestroyedOrNot
+                rocketLocation :: Point,            
+                rocketSpeed    :: Float,
+                rocketStatus   :: DestroyedOrNot
                 }
 
     data Asteroid = Asteroid {
-                    location		:: Point,
-                    size            :: Float,
-                    status  :: DestroyedOrNot,
-                    aSpeed           :: Float
+                    asteroidLocation :: Point,
+                    asteroidSize     :: Float,
+                    asteroidStatus   :: DestroyedOrNot,
+                    asteroidSpeed    :: Float
                     }
 
     data Enemy = Enemy {
                     enemyLocation :: Point,
-                    estatus :: DestroyedOrNot,
-                    espeed :: Float
+                    enemyStatus   :: DestroyedOrNot,
+                    enemySpeed    :: Float
                     }
     
     --data Point = Point Float Float
