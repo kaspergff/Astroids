@@ -11,6 +11,7 @@ import System.Environment
 import Control.Monad (when)
 import Data.Function (on)
 import Data.List (sortBy)
+import Linear.V2
 
 
 -- | Handle one iteration of the game
@@ -331,35 +332,31 @@ scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, ene
 --destroy out of bounds
 
 destroy_out_of_view_objects :: World -> World
-destroy_out_of_view_objects w = w{ 
-    bullets = (destroy_out_of_view_bullets w), 
-    asteroids = (destroy_out_of_view_asteroids w) , 
-    rockets = (destroy_out_of_view_rockets w),
-    enemies = (destroy_out_of_view_enemies w)}
+destroy_out_of_view_objects w@(World{
+    bullets = listOfBullets, 
+    asteroids = listOfAsteroids, 
+    rockets = listofRockets,
+    enemies = listofEnemies}) = w{ 
+    bullets = (destroy_out_of_view_things destroy_out_of_view_bullets listOfBullets), 
+    asteroids = (destroy_out_of_view_things destroy_out_of_view_asteroids listOfAsteroids) , 
+    rockets = (destroy_out_of_view_things destroy_out_of_view_rockets listofRockets),
+    enemies = (destroy_out_of_view_things destroy_out_of_view_enemies listofEnemies)}
     where 
-        destroy_out_of_view_bullets :: World -> [Bullet]
-        destroy_out_of_view_bullets w@(World {bullets = []}) = []
-        destroy_out_of_view_bullets w@(World {bullets = listOfBullets'}) = map check listOfBullets'
-        check :: Bullet -> Bullet
-        check b@(Bullet {bulletLocation = (_,y)}) | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
-                                                    | otherwise = b 
-        destroy_out_of_view_asteroids :: World -> [Asteroid]
-        destroy_out_of_view_asteroids w@(World {asteroids = []}) = []
-        destroy_out_of_view_asteroids w@(World {asteroids = listOfAsteroids'}) = map check1 listOfAsteroids'
-        check1 :: Asteroid -> Asteroid
-        check1 a@(Asteroid {asteroidLocation = (_,y), asteroidSize = si}) | y < (-200-6*si) = a{asteroidStatus = Destroyed}
-                                                            | otherwise = a
-        destroy_out_of_view_rockets :: World -> [Rocket]
-        destroy_out_of_view_rockets w@(World {rockets = []}) = []
-        destroy_out_of_view_rockets w@(World {rockets = listofRockets'}) = map check2 listofRockets'
-        check2 :: Rocket-> Rocket
-        check2 r@(Rocket{rocketLocation = (_,y)}) | y > 200 = r{rocketStatus = Destroyed}
+        destroy_out_of_view_things :: (a->a) -> [a] -> [a]
+        destroy_out_of_view_things _ [] = []
+        destroy_out_of_view_things f l = map f l
+    
+        destroy_out_of_view_bullets :: Bullet -> Bullet
+        destroy_out_of_view_bullets b@(Bullet {bulletLocation = (_,y)}) | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
+                                                                        | otherwise = b 
+        destroy_out_of_view_asteroids :: Asteroid -> Asteroid
+        destroy_out_of_view_asteroids a@(Asteroid {asteroidLocation = (_,y), asteroidSize = si}) | y < (-200-6*si) = a{asteroidStatus = Destroyed}
+                                                                                                | otherwise = a
+        destroy_out_of_view_rockets :: Rocket-> Rocket
+        destroy_out_of_view_rockets r@(Rocket{rocketLocation = (_,y)}) | y > 200 = r{rocketStatus = Destroyed}
                                                 | otherwise = r
-        destroy_out_of_view_enemies :: World -> [Enemy]
-        destroy_out_of_view_enemies  w@(World {enemies = []}) = []
-        destroy_out_of_view_enemies w@(World {enemies = listOfEnemies'}) = map check3 listOfEnemies'
-        check3 :: Enemy -> Enemy
-        check3 e@(Enemy{enemyLocation = (_,y)}) | y < (-220) = e{enemyStatus = Destroyed}
+        destroy_out_of_view_enemies :: Enemy -> Enemy
+        destroy_out_of_view_enemies e@(Enemy{enemyLocation = (_,y)}) | y < (-220) = e{enemyStatus = Destroyed}
                                                  | otherwise = e
 --remove destroyed stuff
 removeDestroidObjects :: World -> World
@@ -368,7 +365,6 @@ removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBul
     bullets = getOnlyNotDesBul listOfBullets,
     rockets = getOnlyNotDesRock listofRockets,
     enemies = getOnlyNotDesEnemy listofEnemies
-
     }
     where
         getOnlyNotDesAst :: [Asteroid] -> [Asteroid]
@@ -376,10 +372,10 @@ removeDestroidObjects w@(World {asteroids = listOfAsteroids, bullets = listOfBul
         getOnlyNotDesBul :: [Bullet] -> [Bullet]
         getOnlyNotDesBul list = [b | b@(Bullet {bulletStatus = NotDestroyed}) <- list]
         getOnlyNotDesRock :: [Rocket] -> [Rocket]
-        getOnlyNotDesRock list = [c | c@(Rocket {rocketStatus = NotDestroyed}) <- list]
+        getOnlyNotDesRock list = [r | r@(Rocket {rocketStatus = NotDestroyed}) <- list]
         getOnlyNotDesEnemy :: [Enemy] -> [Enemy]
-        getOnlyNotDesEnemy list = [d | d@(Enemy {enemyStatus = NotDestroyed}) <- list]
-
+        getOnlyNotDesEnemy list = [e | e@(Enemy {enemyStatus = NotDestroyed}) <- list]
+    
 
 
 -- File handling
@@ -413,3 +409,4 @@ scoreString (x,y) = y ++ ": " ++ show x
 readTup :: String -> (Int, String)
 readTup scoreNameTuple = (score, name)
     where [(score, name)] = reads scoreNameTuple
+
