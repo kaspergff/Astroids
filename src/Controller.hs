@@ -16,10 +16,10 @@ import Data.List (sortBy)
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate  
-    | (isdead $ player $ world gstate) == Dead && scoreSaved gstate == False = do 
+    | (playerstatus $ player $ world gstate) == Dead && scoreSaved gstate == False = do 
         scoreToTXT $ gstate
         return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate, scoreSaved = True}
-    | (isdead $ player $ world gstate) == Dead && scoreSaved gstate = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
+    | (playerstatus $ player $ world gstate) == Dead && scoreSaved gstate = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
     | (isPaused $ world gstate) == True = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
     | otherwise = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
 
@@ -73,17 +73,14 @@ updateWorld w =
     timeToSpawnEnemybullet $
     eos $
     asteroidBullet $
-    bulletEnemy $
     enemyBullet $
-    bulletAsteroid $
     asteroidRocket $
-    rocketAsteroid $
     destroy_out_of_view_objects $
     removeDestroidObjects w
 
 --stop game if dead
 checklive :: World -> World
-checklive w@(World {lives = l,player = p}) | l <= 0 = w{pause = Paused, player = (p{isdead = Dead})}
+checklive w@(World {lives = l,player = p}) | l <= 0 = w{pause = Paused, player = (p{playerstatus = Dead})}
                                            | otherwise = w
 
 -- Move plane
@@ -231,24 +228,14 @@ collisionAsteroidBullet a@(Asteroid {location = (ax,ay), status = s, size = si})
     | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
     | otherwise = False
 
-collisionBulletAsteroid :: Bullet -> Asteroid -> Bool
-collisionBulletAsteroid b@(Bullet {bulletLocation= (bx,by)}) a@(Asteroid {location = (ax,ay), status = s, size = si})
-    | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
-    | otherwise = False    
-
 asteroidBullet :: World -> World
 asteroidBullet w@(World {asteroids = []}) = w
-asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids}
+asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets}
         where
-            check asteroid | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
+            check asteroid  | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
                             | otherwise = asteroid{status = Destroyed}
-                            
-bulletAsteroid :: World -> World
-bulletAsteroid w@(World {bullets = []}) = w
-bulletAsteroid w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{bullets = map check listOfBullets}
-            where 
-                check bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = bullet
-                                | otherwise = bullet{bulletStatus = Destroyed}
+            check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = bullet
+                            | otherwise = bullet{bulletStatus = Destroyed}
 
 --asteroid and rocket
 collisionAsteroidRocket :: Asteroid -> Rocket -> Bool
@@ -256,24 +243,15 @@ collisionAsteroidRocket a@(Asteroid {location = (ax,ay), status = s, size = si})
     | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
     | otherwise = False
 
-collisionRocketAsteroid :: Rocket -> Asteroid -> Bool
-collisionRocketAsteroid b@(Rocket {rockLocation= (bx,by)}) a@(Asteroid {location = (ax,ay), status = s, size = si})
-    | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
-    | otherwise = False    
-
+   
 asteroidRocket :: World -> World
 asteroidRocket w@(World {asteroids = []}) = w
-asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{asteroids = map check listOfAsteroids}
+asteroidRocket w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{asteroids = map check listOfAsteroids, rockets = map check1 listOfRockets}
         where
             check asteroid | all (==False) (map (collisionAsteroidRocket asteroid) listOfRockets) == True = asteroid
-                            | otherwise = asteroid{status = Destroyed}
-                            
-rocketAsteroid :: World -> World
-rocketAsteroid w@(World {rockets = []}) = w
-rocketAsteroid w@(World {asteroids = listOfAsteroids, rockets = listOfRockets}) = w{rockets = map check listOfRockets}
-            where 
-                check rocket | all (==False) (map (collisionRocketAsteroid rocket) listOfAsteroids) == True = rocket
-                                | otherwise = rocket{rocketStatus = Destroyed}
+                           | otherwise = asteroid{status = Destroyed}
+            check1 rocket | all (==False) (map (flip collisionAsteroidRocket rocket) listOfAsteroids) == True = rocket
+                          | otherwise = rocket{rocketStatus = Destroyed}
 
 --player and asteroid        
 -- collision Asteroid and player
@@ -290,7 +268,7 @@ asteroidPlayer w@(World {asteroids = []}) = w
 asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p, lives = l}) = w{asteroids = map fst (map check listOfAsteroids), lives = minimum (map snd (map check listOfAsteroids))}
         where
             check asteroid | collisionAsteroidPlayer asteroid p  == False = (asteroid,l)
-                            | otherwise = (asteroid{status = Destroyed},(l-1))
+                           | otherwise = (asteroid{status = Destroyed},(l-1))
 
 
 
@@ -329,35 +307,24 @@ collisionEnemyBullet :: Enemy -> Bullet -> Bool
 collisionEnemyBullet e@(Enemy {enemyLocation = (ax,ay), estatus = s}) b@(Bullet {bulletLocation= (bx,by), bulletallegiance = a})
     | ax >= (bx-36.5) && ax <= (bx+36.5) && ay >= (by-36.5) && ay <= (by+36.5) && a == Allied = True
     | otherwise = False
-
-
-collisionBulletEnemy :: Bullet -> Enemy -> Bool
-collisionBulletEnemy b@(Bullet {bulletLocation= (bx,by),bulletallegiance = a}) e@(Enemy {enemyLocation = (ax,ay)})
-    | ax >= (bx-36) && ax <= (bx+36) && ay >= (by-36) && ay <= (by+36) && a == Allied = True
-    | otherwise = False    
-
+ 
 enemyBullet :: World -> World
 enemyBullet w@(World {enemies = []}) = w
-enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{enemies = map check listOfEnemies}
+enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{enemies = map check listOfEnemies,bullets = map check1 listOfBullets}
         where
             check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) == True = enemy
                         | otherwise = enemy{estatus = Destroyed}
-                    
-bulletEnemy :: World -> World
-bulletEnemy w@(World {bullets = []}) = w
-bulletEnemy w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{bullets = map check listOfBullets}
-            where 
-                check bullet | all (==False) (map (collisionBulletEnemy bullet) listOfEnemies) == True = bullet
-                                | otherwise = bullet{bulletStatus = Destroyed}
+            check1 bullet | all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True = bullet
+                         | otherwise = bullet{bulletStatus = Destroyed}
 
 --calcscore
 scoreChecker :: World -> World
 scoreChecker w@(World {bullets = []}) = w
-scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listOfEnemies, score = s}) = w{score =  maximum ((map(check1 s)listOfBullets) ++ (map (check s) listOfBullets))   }
+scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listOfEnemies, score = s, rockets = listOfRockets}) = w{score =  maximum ((map(check1 s)listOfBullets) ++ (map (check s) listOfBullets))}
             where 
-                check sc bullet | all (==False) (map (collisionBulletAsteroid bullet) listOfAsteroids) == True = sc
+                check sc bullet | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = sc
                                 | otherwise = (sc + 1)
-                check1 sc bullet@(Bullet { bulletallegiance = a}) | (all (==False) (map (collisionBulletEnemy bullet) listOfEnemies) == True) = sc
+                check1 sc bullet@(Bullet { bulletallegiance = a}) | (all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) == True) = sc
                                                                   | otherwise = (sc + 1)
             
 

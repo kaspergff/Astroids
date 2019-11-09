@@ -43,7 +43,7 @@ module Model where
     data Player = Player {
                 playerlocation  :: (Float,Float),
                 movement        :: Movement,
-                isdead          :: Aliveornot
+                playerstatus          :: Aliveornot
                 }
 
     -- bullets
