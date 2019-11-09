@@ -13,9 +13,9 @@ module Model where
     nO_SECS_BETWEEN_CYCLES = 5
     
     data GameState = GameState {
-                       infoToShow  :: InfoToShow
-                     , world       :: World
-                     , elapsedTime :: Float
+                       infoToShow  :: InfoToShow,
+                       world       :: World,
+                       elapsedTime :: Float
                      
                      }
 
@@ -33,7 +33,8 @@ module Model where
                 oneFiveGenerator :: StdGen,
                 score         :: Int,
                 lives         ::  Int,
-                sprites       :: [Picture]
+                sprites       :: [Picture],
+                schooterTimer :: Int
                 }
 
 
@@ -41,7 +42,6 @@ module Model where
     data Player = Player {
                 playerlocation  :: (Float,Float),
                 movement        :: Movement,
-                -- moest toevoegen om te laten werken is mis inpure
                 isdead          :: Aliveornot
                 }
 
@@ -49,23 +49,21 @@ module Model where
 
     data Bullet = Bullet {
                 bulletLocation :: (Float, Float),            
-                --bmovement :: Movement
                 speed :: Float,
-                bulletStatus :: DestroyedOrNot
-               
-                --bulletallegiance :: AlliedOrNot
+                bulletStatus :: DestroyedOrNot,
+                bulletallegiance :: AlliedOrNot
                 }
+    
+    data AlliedOrNot = Allied | Notallied deriving (Eq)
 
     data Rocket = Rocket {
                 rockLocation :: (Float, Float),            
-                --bmovement :: Movement
                 rspeed :: Float,
                 rocketStatus :: DestroyedOrNot
                 }
 
     data Asteroid = Asteroid {
                     location		:: (Float,Float),
-                    --direction_angle :: Float,
                     size            :: Float,
                     status  :: DestroyedOrNot,
                     aSpeed           :: Float
@@ -88,7 +86,7 @@ module Model where
     
     -- moest pla toevoegen om te laten werken is mis inpure
     initial_world :: StdGen -> StdGen -> StdGen -> [Picture] -> World
-    initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 spr 
+    initial_world esg otg ofg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg otg ofg 0 3 spr 40
                 
     initialState :: StdGen -> StdGen -> StdGen -> [Picture] -> GameState
     initialState esg otg ofg spr = GameState (ShowWorld(initial_world esg otg ofg spr)) (initial_world esg otg ofg spr) 0 
