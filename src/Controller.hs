@@ -73,7 +73,6 @@ updateWorld w =
     asteroidBullet $
     enemyBullet $
     destroy_out_of_view_objects $
-    spawnRock $
     moveRocks $
     removeDestroidObjects w
 
@@ -174,11 +173,12 @@ spawnCluster p g = [createRock p (getFirstVector (generaterVectorCluster g))] ++
                     [createRock p (getThirdVector (generaterVectorCluster g))] ++ 
                     [createRock p (getFourthVector (generaterVectorCluster g))] ++
                     [createRock p (getFifthVector (generaterVectorCluster g))]
-spawnRock :: World -> World
-spawnRock w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g}) =w{rocks = listOfRocks ++ spawnCluster (100,100) g}
 
 createRock :: Point -> Vector -> Rock
 createRock p v = Rock p v 4 NotDestroyed
+
+destroyedRock :: Point -> Vector -> Rock
+destroyedRock p v = Rock p v 4 Destroyed
 
 
 timeToSpawnAsteroid :: World -> World
@@ -273,12 +273,14 @@ collisionAsteroidBullet a@(Asteroid {asteroidLocation = (ax,ay), asteroidStatus 
 
 asteroidBullet :: World -> World
 asteroidBullet w@(World {asteroids = []}) = w
-asteroidBullet w@(World {asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets}
+asteroidBullet w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g, asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets, rocks = listOfRocks ++ concat (map check3 listOfBullets)}
     where
         check asteroid  | all (==False) (map (collisionAsteroidBullet asteroid) listOfBullets) == True = asteroid
                         | otherwise = asteroid{asteroidStatus = Destroyed}
         check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids) == True = bullet
                         | otherwise = bullet{bulletStatus = Destroyed}
+        check3 b@(Bullet{bulletLocation = (bx,by)})   | all (==False) (map (flip collisionAsteroidBullet b) listOfAsteroids) == True = [destroyedRock (-500,-500) (0,0)]
+                        | otherwise = spawnCluster (bx,by) g
 
 -- collision Asteroid and player
 -- hitboxen passen niet best bij player model nu!!
