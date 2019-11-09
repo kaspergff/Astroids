@@ -24,7 +24,11 @@ module View where
     drawWorld w = Pictures
         (drawAsteroids w ++
          drawEnemies w ++
-        drawbullets w ++ [drawPlane w] ++ drawScore w ++ drawLives w ++ drawRocks w
+        drawbullets w ++ 
+        [drawPlane w] ++ 
+        drawScore w ++ 
+        drawLives w ++ 
+        drawRocks w
         )
 
     drawPlane :: World -> Picture
@@ -46,7 +50,6 @@ module View where
     bullet :: Picture
     bullet = color blue $ ThickCircle 1 2
 
-    
     drawAsteroids :: World -> [Picture]
     drawAsteroids w@(World {asteroids = listOfAsteroids}) = map drawAsteroid listOfAsteroids
 
