@@ -89,7 +89,7 @@ module Model where
     data Aliveornot = Alive | Dead deriving (Eq)--for the player
     
     initial_world :: StdGen -> [Picture] -> World
-    initial_world esg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] [] 0 0 esg 0 3 spr 40 []
+    initial_world esg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] 0 0 esg 0 3 spr 40 []
                 
     initialState :: StdGen -> [Picture] -> GameState
     initialState esg spr = GameState (ShowWorld(initial_world esg spr)) (initial_world esg spr) 0 False
