@@ -179,9 +179,11 @@ createRock p v aOs = Rock p v 4 NotDestroyed aOs
 
 -- kijk of het tijd is om een asteriod te spawnen
 timeToSpawnAsteroid :: World -> World
-timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
-    | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
-    | otherwise = w {asteroidTimer = time - 1}
+timeToSpawnAsteroid w@(World {asteroidTimer = time, score = score}) 
+    | time < 1 && score < 15    = spawnAsteroid w{ asteroidTimer = 40}
+    | time < 1 && score < 30    = spawnAsteroid w{ asteroidTimer = 30}
+    | time < 1                  = spawnAsteroid w{ asteroidTimer = 20}
+    | otherwise                 = w {asteroidTimer = time - 1}
 -- move point acording to a vector
 translatePointVector :: Point -> Vector -> Point
 translatePointVector (x1,y1) (x2,y2) = (x1+x2,y1+y2)
