@@ -188,84 +188,36 @@ spawnCluster p g = [createRock p (getFirstVector (generaterVectorCluster g))] ++
 createRock :: Point -> Vector -> Rock
 createRock p v = Rock p v 4 NotDestroyed
 
-
+-- kijk of het tijd is om een asteriod te spawnen
 timeToSpawnAsteroid :: World -> World
 timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
     | time < 1 = spawnAsteroid w{ asteroidTimer = 40}
     | otherwise = w {asteroidTimer = time - 1}
-
+-- move point acording to a vector
 translatePointVector :: Point -> Vector -> Point
 translatePointVector (x1,y1) (x2,y2) = (x1+x2,y1+y2)
 
-generateTreeNumbers :: RandomGen g => g -> ((Float, Float, Float), g)
-generateTreeNumbers g = let (v1, g1) = randomR (-200, 200) g
-                            (v2, g2) = randomR (1, 5) g1 -- Use new seed
-                            (v3, g3) = randomR (1, 20) g2 -- Use new seed
-                       in ((v1, v2,v3), g3) -- Return last seed
-
-getFirstNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
-getFirstNumber ((f, _,_), _) = f
-
-getSecondNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
-getSecondNumber ((_, f,_), _) = f
-
-getThirdNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
-getThirdNumber ((_, _,f), _) = f
-
-getSeed :: RandomGen g => ((Float, Float,Float), g) -> g
-getSeed ((_, _,_), g) = g
-
-generateVectorAsteroid :: RandomGen g => g -> ((Float, Float), g)
-generateVectorAsteroid g = let (v1, g1) = randomR (-4, 4) g
-                               (v2, g2) = randomR (-1, -5) g1 -- Use new seed
-                           in  ((v1, v2), g2) -- Return last seed
-
-getVectorAsteroid :: RandomGen g => ((Float, Float), g) -> (Float, Float)
-getVectorAsteroid ((x, y), _) = (x,y)
-
-generaterVectorCluster :: RandomGen g => g -> ((Vector,Vector,Vector,Vector,Vector), g)
-generaterVectorCluster g = let (x1, g1) = randomR (-4, 4) g
-                               (y1, g2) = randomR (-4, 4) g1 -- Use new seed
-                               (x2, g3) = randomR (-4, 4) g2
-                               (y2, g4) = randomR (-4, 4) g3 -- Use new seed
-                               (x3, g5) = randomR (-4, 4) g4
-                               (y3, g6) = randomR (-4, 4) g5 -- Use new seed
-                               (x4, g7) = randomR (-4, 4) g6
-                               (y4, g8) = randomR (-4, 4) g7 -- Use new seed
-                               (x5, g9) = randomR (-4, 4) g8
-                               (y5, g10) = randomR (-4, 4) g9 -- Use new seed
-                            in (((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5)),g10)
-
-getFirstVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
-getFirstVector ((v,_,_,_,_), _) = v
-getSecondVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
-getSecondVector ((_,v,_,_,_), _) = v
-getThirdVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
-getThirdVector ((_,_,v,_,_), _) = v
-getFourthVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
-getFourthVector ((_,_,_,v,_), _) = v
-getFifthVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
-getFifthVector ((_,_,_,_,v), _) = v
 
 -- bullets
+-- update all bullets
 updateBullets :: World -> World
 updateBullets w@(World {bullets = listOfBullets}) = w{bullets = map updateBullet listOfBullets}
-
+-- update single bullet
 updateBullet :: Bullet -> Bullet
 updateBullet b@(Bullet{ bulletLocation = (x,y), bulletSpeed = s}) = b{ bulletLocation = (x,y+s), bulletSpeed = s}
-
+-- spawn bullet
 spawnBullet :: World -> World
 spawnBullet w@(World {player = p@(Player {playerLocation = (x,y)}), bullets = listOfBullets}) = w{bullets = listOfBullets ++ [createBullet  Allied 10  (x,y)] }
-
+-- spawn one bullet
 spawnEnemyBullet :: Enemy -> Bullet
 spawnEnemyBullet (Enemy {enemyLocation = (x,y)}) = createBullet Notallied (-10) (x,y)
-
+-- spawns all enemie bullets
 spawnEnemyBullets :: World -> World
 spawnEnemyBullets w@(World {enemies = listofEnemies, bullets = listOfBullets}) = w{bullets = listOfBullets ++ map spawnEnemyBullet listofEnemies}
-
+-- creat a bullet
 createBullet :: AlliedOrNot -> Float -> Point -> Bullet
 createBullet a s (x,y) = Bullet (x,y) s NotDestroyed a
-
+-- timer for enemies to shoot
 timeToSpawnEnemybullet :: World -> World
 timeToSpawnEnemybullet w@(World {schooterTimer = time}) 
     | time < 1 = spawnEnemyBullets w{ schooterTimer = 20}
@@ -273,12 +225,12 @@ timeToSpawnEnemybullet w@(World {schooterTimer = time})
 
 --collision checkers
 --asteroid and bullet
-
 collisionAsteroidBullet :: Asteroid -> Bullet -> Bool
 collisionAsteroidBullet Asteroid {asteroidLocation = (ax,ay), asteroidStatus = s, asteroidSize = si} Bullet {bulletLocation= (bx,by)}
     | ax >= (bx-si*7) && ax <= (bx+si*7) && ay >= (by-si*6) && ay <= (by+si*6) = True
     | otherwise = False
 
+-- checks collision asteroids and bullets. If there is a collision Destroy asteroid and bullet en spawn cluster of rocks    
 asteroidBullet :: World -> World
 asteroidBullet w@(World {asteroids = []}) = w
 asteroidBullet w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g, asteroids = listOfAsteroids, bullets = listOfBullets}) = w{asteroids = map check listOfAsteroids, bullets = map check2 listOfBullets, rocks = listOfRocks ++ concatMap check3 listOfBullets}
@@ -425,3 +377,54 @@ readTup :: String -> (Int, String)
 readTup scoreNameTuple = (score, name)
     where [(score, name)] = reads scoreNameTuple
 
+-- Random numbers 
+    -- function to generate 3 random numbers
+generateTreeNumbers :: RandomGen g => g -> ((Float, Float, Float), g)
+generateTreeNumbers g = let (v1, g1) = randomR (-200, 200) g
+                            (v2, g2) = randomR (1, 5) g1 -- Use new seed
+                            (v3, g3) = randomR (1, 20) g2 -- Use new seed
+                       in ((v1, v2,v3), g3) -- Return last seed
+-- extract first random number
+getFirstNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
+getFirstNumber ((f, _,_), _) = f
+-- extract second random number
+getSecondNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
+getSecondNumber ((_, f,_), _) = f
+-- extract Third random number
+getThirdNumber :: RandomGen g => ((Float, Float,Float), g) -> Float
+getThirdNumber ((_, _,f), _) = f
+-- extract the seed
+getSeed :: RandomGen g => ((Float, Float,Float), g) -> g
+getSeed ((_, _,_), g) = g
+-- generate vector for asteroid
+generateVectorAsteroid :: RandomGen g => g -> ((Float, Float), g)
+generateVectorAsteroid g = let (v1, g1) = randomR (-4, 4) g
+                               (v2, g2) = randomR (-1, -5) g1 -- Use new seed
+                           in  ((v1, v2), g2) -- Return last seed
+-- extract the vector af an asteroid
+getVectorAsteroid :: RandomGen g => ((Float, Float), g) -> (Float, Float)
+getVectorAsteroid ((x, y), _) = (x,y)
+-- generate the vector for a cluster of rocks
+generaterVectorCluster :: RandomGen g => g -> ((Vector,Vector,Vector,Vector,Vector), g)
+generaterVectorCluster g = let (x1, g1) = randomR (-4, 4) g
+                               (y1, g2) = randomR (-4, 4) g1 -- Use new seed
+                               (x2, g3) = randomR (-4, 4) g2
+                               (y2, g4) = randomR (-4, 4) g3 -- Use new seed
+                               (x3, g5) = randomR (-4, 4) g4
+                               (y3, g6) = randomR (-4, 4) g5 -- Use new seed
+                               (x4, g7) = randomR (-4, 4) g6
+                               (y4, g8) = randomR (-4, 4) g7 -- Use new seed
+                               (x5, g9) = randomR (-4, 4) g8
+                               (y5, g10) = randomR (-4, 4) g9 -- Use new seed
+                            in (((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5)),g10)
+-- extract the different vectors
+getFirstVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getFirstVector ((v,_,_,_,_), _) = v
+getSecondVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getSecondVector ((_,v,_,_,_), _) = v
+getThirdVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getThirdVector ((_,_,v,_,_), _) = v
+getFourthVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getFourthVector ((_,_,_,v,_), _) = v
+getFifthVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
+getFifthVector ((_,_,_,_,v), _) = v
