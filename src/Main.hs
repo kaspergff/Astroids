@@ -8,7 +8,8 @@ module Main where
     import Graphics.Gloss.Interface.IO.Game
     
     
-
+-- main function to start the game.
+-- 2 bitmaps worden geladen en een generator voor random getallen wordt gecreeërd
     main :: IO () 
     main = do       
         planeafb <- loadBMP "sprites als bitmap/plane.bmp" --load bitmap for player 

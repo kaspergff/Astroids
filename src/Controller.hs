@@ -128,13 +128,13 @@ updateAsteroids :: World -> World
 updateAsteroids w@(World {asteroids = listOfAsteroids}) = w{asteroids = map updateAsteroid listOfAsteroids}
 
 updateAsteroid :: Asteroid -> Asteroid
-updateAsteroid a@(Asteroid{ asteroidLocation = al, asteroidSpeed = s, asteroidHeading = ah}) = a{ asteroidLocation = translatePointVector al ah}
+updateAsteroid a@(Asteroid{ asteroidLocation = al, asteroidHeading = ah}) = a{ asteroidLocation = translatePointVector al ah}
 
 spawnAsteroid :: World -> World
-spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g}) = w{asteroids = listOfAsteroids ++ [createAsteroid (getFirstNumber(generateTreeNumbers g)) (getSecondNumber(generateTreeNumbers g)) (getThirdNumber(generateTreeNumbers g)) (getVectorAsteroid(generateVectorAsteroid g))]
+spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g}) = w{asteroids = listOfAsteroids ++ [createAsteroid (getFirstNumber(generateTreeNumbers g)) (getSecondNumber(generateTreeNumbers g)) (getVectorAsteroid(generateVectorAsteroid g))]
 , asteroidsSpawnGenerator = getSeed(generateTreeNumbers g)}
 
-createAsteroid :: Float -> Float -> Float -> Vector -> Asteroid
+createAsteroid :: Float -> Float -> Vector -> Asteroid
 createAsteroid x asteroidSize = Asteroid (x, 200) asteroidSize NotDestroyed
 
 keepAsteroidsOnScreen :: World -> World
