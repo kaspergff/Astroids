@@ -330,20 +330,20 @@ removeDestroidObjects w@World {asteroids = listOfAsteroids, bullets = listOfBull
     }
     
 -- File handling
--- Write the current score to the "scores.txt" file
+-- Write the current score to the "highscores.txt" file
 scoreToTXT :: GameState -> IO GameState
 scoreToTXT gstate@(GameState{world = w@(World {score = p})})  = 
     do
         name <- getLine
-        f <- readFile "scores.txt"
+        f <- readFile "highscores.txt"
         let scores = f ++ ['\n'] ++ show p ++ name
-        when (not (null scores)) $ writeFile "scores.txt" scores
+        when (length scores > 0) $ writeFile "highscores.txt" scores
         return gstate
 -- extract scores from .txt file
 getScoreFromTXT :: IO [String]
 getScoreFromTXT = 
     do
-        f <- readFile "scores.txt"
+        f <- readFile "highscores.txt"
         getsrc f 
     where
         getsrc c | length c > 1 = do
