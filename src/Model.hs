@@ -64,10 +64,11 @@ module Model where
       }
     -- rocks voor explosie
     data Rock = Rock {
-      rockLocation :: Point,
-      rockHeading  :: Vector,
-      liveTime     :: Int, -- om te zorgen dat ze na een tijdje verdwijnen.
-      rockStatus   :: DestroyedOrNot
+      rockLocation    :: Point,
+      rockHeading     :: Vector,
+      liveTime        :: Int, -- om te zorgen dat ze na een tijdje verdwijnen.
+      rockStatus      :: DestroyedOrNot,
+      asteroidOrShip  :: AsteroidOrShip
       }
 
       -- enemy
@@ -76,6 +77,8 @@ module Model where
       enemyStatus   :: DestroyedOrNot,
       enemySpeed    :: Float
       }
+
+    data AsteroidOrShip = FromAsteroid | FromShip deriving (Eq)
 
     -- movement player
     data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)

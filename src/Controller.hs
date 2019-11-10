@@ -160,15 +160,22 @@ updateRock r@(Rock{ rockLocation = rl, rockHeading = rh, liveTime = lt, rockStat
     | otherwise = r{ rockLocation = translatePointVector rl rh, liveTime = lt -1}
 
 -- spawn een cluster van rocks voor animeren explosie
-spawnCluster :: Point -> StdGen -> [Rock]
-spawnCluster p g = [createRock p (getFirstVector (generaterVectorCluster g))] ++ 
-                    [createRock p (getSecondVector (generaterVectorCluster g))] ++ 
-                    [createRock p (getThirdVector (generaterVectorCluster g))] ++ 
-                    [createRock p (getFourthVector (generaterVectorCluster g))] ++
-                    [createRock p (getFifthVector (generaterVectorCluster g))]
+spawnClusterFromAsteroid :: Point -> StdGen -> [Rock]
+spawnClusterFromAsteroid p g = [createRock p (getFirstVector (generaterVectorCluster g)) FromAsteroid] ++ 
+                    [createRock p (getSecondVector (generaterVectorCluster g))FromAsteroid] ++ 
+                    [createRock p (getThirdVector (generaterVectorCluster g))FromAsteroid] ++ 
+                    [createRock p (getFourthVector (generaterVectorCluster g))FromAsteroid] ++
+                    [createRock p (getFifthVector (generaterVectorCluster g))FromAsteroid]
+
+spawnClusterFromShip :: Point -> StdGen -> [Rock]
+spawnClusterFromShip p g = [createRock p (getFirstVector (generaterVectorCluster g)) FromShip] ++ 
+                    [createRock p (getSecondVector (generaterVectorCluster g))FromShip] ++ 
+                    [createRock p (getThirdVector (generaterVectorCluster g))FromShip] ++ 
+                    [createRock p (getFourthVector (generaterVectorCluster g))FromShip] ++
+                    [createRock p (getFifthVector (generaterVectorCluster g))FromShip]                    
 -- maak een enkel rock
-createRock :: Point -> Vector -> Rock
-createRock p v = Rock p v 4 NotDestroyed
+createRock :: Point -> Vector -> AsteroidOrShip -> Rock
+createRock p v aOs = Rock p v 4 NotDestroyed aOs
 
 -- kijk of het tijd is om een asteriod te spawnen
 timeToSpawnAsteroid :: World -> World
@@ -223,7 +230,7 @@ asteroidBullet w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g, aster
                         | otherwise = bullet{bulletStatus = Destroyed}
         check3 b@(Bullet{bulletLocation = (bx,by)})   
                         | all (==False) (map (flip collisionAsteroidBullet b) listOfAsteroids) == True = []
-                        | otherwise = spawnCluster (bx,by) g
+                        | otherwise = spawnClusterFromAsteroid (bx,by) g
 
 -- collision Asteroid and player
 -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
@@ -275,10 +282,10 @@ collisionEnemyBullet e@(Enemy {enemyLocation = (ax,ay), enemyStatus = s}) b@(Bul
  
 enemyBullet :: World -> World
 enemyBullet w@(World {enemies = []}) = w
-enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets}) = w{enemies = map check listOfEnemies,bullets = map check1 listOfBullets}
+enemyBullet w@(World {enemies = listOfEnemies, bullets = listOfBullets, rocks = listOfRocks, asteroidsSpawnGenerator = g}) = w{enemies = map (fst.check) listOfEnemies,bullets = map check1 listOfBullets, rocks = listOfRocks ++  (concatMap (snd.check) listOfEnemies) }
     where
-        check enemy | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) = enemy
-                    | otherwise = enemy{enemyStatus = Destroyed}
+        check enemy@(Enemy{enemyLocation = el }) | all (==False) (map (collisionEnemyBullet enemy) listOfBullets) = (enemy,[])
+                    | otherwise = (enemy{enemyStatus = Destroyed},spawnClusterFromShip el g )
         check1 bullet | all (==False) (map (flip collisionEnemyBullet bullet) listOfEnemies) = bullet
                       | otherwise = bullet{bulletStatus = Destroyed}
 
