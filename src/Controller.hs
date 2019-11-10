@@ -152,15 +152,13 @@ keepAsteroidsOnScreen w@(World {asteroids = listOfAsteroids}) = w{asteroids = ma
                                                                                     | otherwise = a
 -- Update all rocks    
 moveRocks :: World -> World
-moveRocks w@(World {rocks = listOfRocks}) = w{rocks = map updateRock (checkRockDestryed listOfRocks)}
+moveRocks w@(World {rocks = listOfRocks}) = w{rocks = map updateRock listOfRocks}
 -- update een enkel rock als de liveTime van een rock lager dan 0 is wordt die destroyed
 updateRock :: Rock -> Rock
 updateRock r@(Rock{ rockLocation = rl, rockHeading = rh, liveTime = lt, rockStatus = rs}) 
     |  lt < 0 = r{ rockStatus = Destroyed}
     | otherwise = r{ rockLocation = translatePointVector rl rh, liveTime = lt -1}
--- zorg dat destroyed rocks verwijderd worden
-checkRockDestryed :: [Rock] -> [Rock]
-checkRockDestryed rockList = [r | r@(Rock {rockStatus = NotDestroyed}) <- rockList]
+
 -- spawn een cluster van rocks voor animeren explosie
 spawnCluster :: Point -> StdGen -> [Rock]
 spawnCluster p g = [createRock p (getFirstVector (generaterVectorCluster g))] ++ 
@@ -223,18 +221,19 @@ asteroidBullet w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g, aster
                         | otherwise = asteroid{asteroidStatus = Destroyed}
         check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids)  = bullet
                         | otherwise = bullet{bulletStatus = Destroyed}
-        check3 b@(Bullet{bulletLocation = (bx,by)})   | all (==False) (map (flip collisionAsteroidBullet b) listOfAsteroids) == True = []
+        check3 b@(Bullet{bulletLocation = (bx,by)})   
+                        | all (==False) (map (flip collisionAsteroidBullet b) listOfAsteroids) == True = []
                         | otherwise = spawnCluster (bx,by) g
 
 -- collision Asteroid and player
--- hitboxen passen niet best bij player model nu!!
 -- als player een asteroid op x = px+32 en y = py+ 32 heeft word het als een hit gezien maar het is natuurlijk niet echt een hit eg, de hitbox is een vierkant nu...        
-
+-- collision asteroid en player
 collisionAsteroidPlayer :: Asteroid -> Player -> Bool
 collisionAsteroidPlayer  a@( Asteroid {asteroidLocation = (ax,ay), asteroidSize = si}) p@(Player {playerLocation = (px,py)})
     | ax >= (px-32) && ax <= (px+32) && ay >= (py-32) && ay <= (py+32) = True
     | otherwise = False    
 
+-- destroy asteroids on inpact player and remove one live    
 asteroidPlayer :: World -> World
 asteroidPlayer w@(World {asteroids = []}) = w
 asteroidPlayer w@(World {asteroids = listOfAsteroids, player = p, lives = l}) = w{asteroids = map (fst.check) listOfAsteroids, lives = minimum (map (snd.check) listOfAsteroids)}
@@ -294,39 +293,32 @@ scoreChecker w@(World {asteroids = listOfAsteroids, bullets = listOfBullets, ene
                                                           | otherwise = (sc + 1)
        
 --destroy out of bounds
-
 destroy_out_of_view_objects :: World -> World
 destroy_out_of_view_objects w@(World{
     bullets = listOfBullets, 
     asteroids = listOfAsteroids, 
     enemies = listofEnemies}) = w{ 
-    bullets = (map destroy_out_of_view_bullets listOfBullets), 
-    asteroids = (map destroy_out_of_view_asteroids listOfAsteroids) , 
-    enemies = (map destroy_out_of_view_enemies listofEnemies)}
-    where 
-        destroy_out_of_view_bullets :: Bullet -> Bullet
-        destroy_out_of_view_bullets b@Bullet {bulletLocation = (_,y)} | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
-                                                                        | otherwise = b 
-        destroy_out_of_view_asteroids :: Asteroid -> Asteroid
-        destroy_out_of_view_asteroids a@Asteroid {asteroidLocation = (_,y), asteroidSize = si} | y < (-200-6*si) = a{asteroidStatus = Destroyed}
-                                                                                                | otherwise = a
-        destroy_out_of_view_enemies :: Enemy -> Enemy
-        destroy_out_of_view_enemies e@Enemy{enemyLocation = (_,y)} | y < (-220) = e{enemyStatus = Destroyed}
-                                                 | otherwise = e
+            bullets = (map destroy_out_of_view_bullets listOfBullets), 
+            asteroids = (map destroy_out_of_view_asteroids listOfAsteroids) , 
+            enemies = (map destroy_out_of_view_enemies listofEnemies)}
+            where 
+                destroy_out_of_view_bullets :: Bullet -> Bullet
+                destroy_out_of_view_bullets b@Bullet {bulletLocation = (_,y)} | y > 200 || y < (-200) = b{bulletStatus = Destroyed}
+                                                                                | otherwise = b 
+                destroy_out_of_view_asteroids :: Asteroid -> Asteroid
+                destroy_out_of_view_asteroids a@Asteroid {asteroidLocation = (_,y), asteroidSize = si} | y < (-200-6*si) = a{asteroidStatus = Destroyed}
+                                                                                                        | otherwise = a
+                destroy_out_of_view_enemies :: Enemy -> Enemy
+                destroy_out_of_view_enemies e@Enemy{enemyLocation = (_,y)} | y < (-220) = e{enemyStatus = Destroyed}
+                                                        | otherwise = e
 --remove destroyed stuff
 removeDestroidObjects :: World -> World
-removeDestroidObjects w@World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listofEnemies} = w{
-    asteroids = getOnlyNotDesAst listOfAsteroids,
-    bullets = getOnlyNotDesBul listOfBullets,
-    enemies = getOnlyNotDesEnemy listofEnemies
+removeDestroidObjects w@World {asteroids = listOfAsteroids, bullets = listOfBullets, enemies = listofEnemies, rocks = listOfRocks} = w{
+                    asteroids   = [a | a@Asteroid {asteroidStatus = NotDestroyed} <- listOfAsteroids],
+                    bullets     = [b | b@Bullet {bulletStatus = NotDestroyed} <- listOfBullets],
+                    enemies     = [e | e@Enemy {enemyStatus = NotDestroyed} <- listofEnemies],
+                    rocks       = [r | r@(Rock {rockStatus = NotDestroyed}) <- listOfRocks]
     }
-    where
-        getOnlyNotDesAst :: [Asteroid] -> [Asteroid]
-        getOnlyNotDesAst list = [a | a@Asteroid {asteroidStatus = NotDestroyed} <- list]
-        getOnlyNotDesBul :: [Bullet] -> [Bullet]
-        getOnlyNotDesBul list = [b | b@Bullet {bulletStatus = NotDestroyed} <- list]
-        getOnlyNotDesEnemy :: [Enemy] -> [Enemy]
-        getOnlyNotDesEnemy list = [e | e@Enemy {enemyStatus = NotDestroyed} <- list]
     
 -- File handling
 -- Write the current score to the "scores.txt" file
@@ -338,7 +330,7 @@ scoreToTXT gstate@(GameState{world = w@(World {score = p})})  =
         let scores = f ++ ['\n'] ++ show p ++ name
         when (not (null scores)) $ writeFile "scores.txt" scores
         return gstate
-
+-- extract scores from .txt file
 getScoreFromTXT :: IO [String]
 getScoreFromTXT = 
     do
@@ -347,18 +339,18 @@ getScoreFromTXT =
     where
         getsrc c | length c > 1 = do
                                 let content =  lines c
-                                    tups = map readTup content
-                                    stups = take 3 (sortBy (flip compare `on` fst) tups) -- sorted list of highscores
-                                    scores = map scoreString stups
+                                    highScoreTuple = map getHighScoreTuple content
+                                    bestScores = take 3 (sortBy (flip compare `on` fst) highScoreTuple) -- sorted list of highscores
+                                    scores = map scoreString bestScores
                                 return (reverse scores)
                 | otherwise = return []
         
-
+-- make string with score
 scoreString :: (Int, String) -> String
 scoreString (x,y) = y ++ ": " ++ show x
-
-readTup :: String -> (Int, String)
-readTup scoreNameTuple = (score, name)
+-- make tuple with highscore
+getHighScoreTuple :: String -> (Int, String)
+getHighScoreTuple scoreNameTuple = (score, name)
     where [(score, name)] = reads scoreNameTuple
 
 -- Random numbers 
