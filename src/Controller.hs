@@ -20,7 +20,7 @@ step secs gstate
         return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate, scoreSaved = True}
     | playerStatus ( player $ world gstate) == Dead && scoreSaved gstate = return $ gstate {infoToShow = ShowDeathscreen $ world gstate, world = world gstate}
     | (isPaused $ world gstate) = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
-    | otherwise = return $ gstate { elapsedTime = elapsedTime gstate + secs, infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
+    | otherwise = return $ gstate {infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
@@ -42,18 +42,18 @@ inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(Worl
 inputKey (EventKey (SpecialKey (KeyUp)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
 inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
 -}
-inputKey (EventKey (Char ('w')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = UpMovement}}}
-inputKey (EventKey (Char ('a')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = LeftMovement}}}
-inputKey (EventKey (Char ('s')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = DownMovement}}}
-inputKey (EventKey (Char ('d')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = RightMovement}}}
-inputKey (EventKey (Char ('e')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = UprightMovement}}}
-inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = UpleftMovement}}}
+inputKey (EventKey (Char ('w')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = UpMovement}}}
+inputKey (EventKey (Char ('a')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = LeftMovement}}}
+inputKey (EventKey (Char ('s')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = DownMovement}}}
+inputKey (EventKey (Char ('d')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = RightMovement}}}
+inputKey (EventKey (Char ('e')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = UprightMovement}}}
+inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = UpleftMovement}}}
 
 --bullet
-inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l}) _ _) = gstate {world = (spawnBullet w)}
+inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l})  _) = gstate {world = (spawnBullet w)}
 inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Paused} }
 inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
-inputKey _ gstate@(GameState _ w@(World{player = p}) _ _) = gstate {world = w {player = p {movement = NoMovement}}}
+inputKey _ gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = NoMovement}}}
 
 updateWorld :: World -> World
 updateWorld w = 

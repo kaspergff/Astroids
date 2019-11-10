@@ -14,67 +14,64 @@ module Model where
     nO_SECS_BETWEEN_CYCLES = 5
     
     data GameState = GameState {
-                       infoToShow  :: InfoToShow,
-                       world       :: World,
-                       elapsedTime :: Float,
-                       scoreSaved  :: Bool
-                     
-                     }
+      infoToShow  :: InfoToShow,
+      world       :: World,
+      scoreSaved  :: Bool
+      }
 
     data World = World {
-                player                  :: Player,
-                pause                   :: PauseorPlay,
-                bullets                 :: [Bullet],
-                asteroids               :: [Asteroid],
-                enemies                 :: [Enemy],
-                asteroidTimer           :: Int,
-                enemyTimer              :: Int,
-                asteroidsSpawnGenerator :: StdGen,
-                score                   :: Int,
-                lives                   :: Int,
-                sprites                 :: [Picture],
-                schooterTimer           :: Int,
-                rocks                   :: [Rock]
-                }
+      player                  :: Player,
+      pause                   :: PauseorPlay,
+      bullets                 :: [Bullet],
+      asteroids               :: [Asteroid],
+      enemies                 :: [Enemy],
+      asteroidTimer           :: Int,
+      enemyTimer              :: Int,
+      asteroidsSpawnGenerator :: StdGen,
+      score                   :: Int,
+      lives                   :: Int,
+      sprites                 :: [Picture],
+      schooterTimer           :: Int,
+      rocks                   :: [Rock]
+      }
 
     -- player
     data Player = Player {
-                playerLocation :: Point,
-                movement       :: Movement,
-                playerStatus   :: Aliveornot
-                }
+      playerLocation :: Point,
+      movement       :: Movement,
+      playerStatus   :: Aliveornot
+      }
 
     -- bullets
 
     data Bullet = Bullet {
-                bulletLocation   :: Point,            
-                bulletSpeed      :: Float,
-                bulletStatus     :: DestroyedOrNot,
-                bulletAllegiance :: AlliedOrNot
-                }
+      bulletLocation   :: Point,            
+      bulletSpeed      :: Float,
+      bulletStatus     :: DestroyedOrNot,
+      bulletAllegiance :: AlliedOrNot
+      }
     
     data AlliedOrNot = Allied | Notallied deriving (Eq)
 
     data Asteroid = Asteroid {
-                    asteroidLocation :: Point,
-                    asteroidSize     :: Float,
-                    asteroidStatus   :: DestroyedOrNot,
-                    asteroidSpeed    :: Float,
-                    asteroidHeading  :: Vector
-                    }
+      asteroidLocation :: Point,
+      asteroidSize     :: Float,
+      asteroidStatus   :: DestroyedOrNot,
+      asteroidSpeed    :: Float,
+      asteroidHeading  :: Vector
+      }
     data Rock = Rock {
-                rockLocation :: Point,
-                rockHeading  :: Vector,
-                liveTime     :: Int,
-                rockStatus   :: DestroyedOrNot
-
-    }
+      rockLocation :: Point,
+      rockHeading  :: Vector,
+      liveTime     :: Int,
+      rockStatus   :: DestroyedOrNot
+      }
 
     data Enemy = Enemy {
-                    enemyLocation :: Point,
-                    enemyStatus   :: DestroyedOrNot,
-                    enemySpeed    :: Float
-                    }
+      enemyLocation :: Point,
+      enemyStatus   :: DestroyedOrNot,
+      enemySpeed    :: Float
+      }
     
     --data Point = Point Float Float
     --data Vector = Vector Float Float
@@ -92,7 +89,7 @@ module Model where
     initialWorld esg spr = World (Player (0,-180) NoMovement Alive) Playing [] [] [] 0 0 esg 0 3 spr 40 []
                 
     initialState :: StdGen -> [Picture] -> GameState
-    initialState esg spr = GameState (ShowWorld(initialWorld esg spr)) (initialWorld esg spr) 0 False
+    initialState esg spr = GameState (ShowWorld(initialWorld esg spr)) (initialWorld esg spr) False
 
     
 
