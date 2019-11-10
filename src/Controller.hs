@@ -183,9 +183,6 @@ spawnCluster p g = [createRock p (getFirstVector (generaterVectorCluster g))] ++
 createRock :: Point -> Vector -> Rock
 createRock p v = Rock p v 4 NotDestroyed
 
-destroyedRock :: Point -> Vector -> Rock
-destroyedRock p v = Rock p v 4 Destroyed
-
 
 timeToSpawnAsteroid :: World -> World
 timeToSpawnAsteroid w@(World {asteroidTimer = time}) 
@@ -285,7 +282,7 @@ asteroidBullet w@(World {rocks = listOfRocks, asteroidsSpawnGenerator = g, aster
                         | otherwise = asteroid{asteroidStatus = Destroyed}
         check2 bullet   | all (==False) (map (flip collisionAsteroidBullet bullet) listOfAsteroids)  = bullet
                         | otherwise = bullet{bulletStatus = Destroyed}
-        check3 b@(Bullet{bulletLocation = (bx,by)})   | all (==False) (map (flip collisionAsteroidBullet b) listOfAsteroids)  = [destroyedRock (-500,-500) (0,0)]
+        check3 b@(Bullet{bulletLocation = (bx,by)})   | all (==False) (map (flip collisionAsteroidBullet b) listOfAsteroids) == True = []
                         | otherwise = spawnCluster (bx,by) g
 
 -- collision Asteroid and player
