@@ -12,7 +12,10 @@ import Data.Function (on)
 import Data.List (sortBy)
 
 
--- | Handle one iteration of the game
+-- | Verwerk 1 interatie van de game
+-- Als de player dood is en de naam nogniet is ingevuld laat dan de naam invullen en laat het eind scherm zien. Er is daarna een extra check die er voor zorgt dat de player maar 1x zijn naam kan invullen
+-- één naar laatste verwerd pauze en herstarten
+-- laaste ubdate de game elke stap
 step :: Float -> GameState -> IO GameState
 step secs gstate  
     | playerStatus ( player $ world gstate) == Dead && not (scoreSaved gstate) = do 
@@ -22,12 +25,11 @@ step secs gstate
     | (isPaused $ world gstate) = return $ gstate {infoToShow = ShowWorld $ world gstate, world = world gstate}
     | otherwise = return $ gstate {infoToShow = ShowWorld(updateWorld $ world gstate), world = updateWorld $ world gstate}
 
--- | Handle user input
+-- | Verwerk input van de user
 input :: Event -> GameState -> IO GameState
 input e gstate = return (inputKey e gstate)
 
 -- Key input
-
 inputKey :: Event -> GameState -> GameState  
 --laat staan tot nader order
 {-
@@ -55,42 +57,44 @@ inputKey (EventKey (Char ('p')) _ _ _) gstate@(GameState{world = w}) = gstate {w
 inputKey (EventKey (Char ('r')) _ _ _) gstate@(GameState{world = w}) = gstate {world = w {pause = Playing} }
 inputKey _ gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = NoMovement}}}
 
+-- main update functie de alles in de wereld update
 updateWorld :: World -> World
 updateWorld w = 
-    updatePlane $ 
-    checklive $
-    asteroidPlayer $
-    planeOnScreen $ 
-    updateBullets $
-    scoreChecker $
-    updateAsteroids $
-    updateEnemies $ 
+    checklive $ -- leeft player nog
+    planeOnScreen $  -- zorg dat player niet van het scherm kan
+    updatePlane $  -- verplaats player
+    updateBullets $ -- verplaatst bullets
+    updateAsteroids $ -- verplaats asteroids
+    updateEnemies $ -- verplaats enemies
+    moveRocks $ -- verplaatst rocks
+    -- collision
+    asteroidPlayer $ 
     enemyPlayer $
     enemyBulletPlayer $
-    timeToSpawnEnemybullet $
-    eos $
-    keepAsteroidsOnScreen $
     asteroidBullet $
     enemyBullet $
-    destroy_out_of_view_objects $
-    moveRocks $
-    removeDestroidObjects w
 
---stop game if dead
+    scoreChecker $ -- check score
+    timeToSpawnEnemybullet $ -- nieuw schot enemies
+    eos $ -- welke enemies worden gespawned
+    keepAsteroidsOnScreen $ -- zorg dat asteroids op scherm blijven
+    destroy_out_of_view_objects $ -- destroy objects ver buiten het scherm
+    removeDestroidObjects w -- verwijder destroyed objecten
+
+--Controleer of de player nog levens heeft. Als de player geen levens heeft stop de game
 checklive :: World -> World
 checklive w@(World {lives = l,player = p}) | l <= 0 = w{pause = Paused, player = (p{playerStatus= Dead})}
                                            | otherwise = w
 
--- Move plane
+-- Move plane over screen
 updatePlane :: World -> World
-
 updatePlane w@(World {player = p@(Player {playerLocation = (x,y), movement = dir})})
-    | dir == RightMovement = w{ player = p {playerLocation = (x + 10 ,y), movement = RightMovement}}
-    | dir == LeftMovement = w{ player = p {playerLocation = (x - 10,y), movement = LeftMovement}}
-    | dir == DownMovement = w{ player = p {playerLocation = (x,y - 10), movement = DownMovement}}
-    | dir == UpMovement = w{ player = p {playerLocation = (x,y + 10), movement = UpMovement}}
-    | dir == UpleftMovement = w{ player = p {playerLocation = (x - 5.5 , y + 5.5), movement = UpleftMovement}}
-    | dir == UprightMovement = w{ player = p {playerLocation = (x + 5.5, y + 5.5), movement = UprightMovement}}
+    | dir == RightMovement = w{ player = p {playerLocation = (x + 10 ,y)}}
+    | dir == LeftMovement = w{ player = p {playerLocation = (x - 10,y)}}
+    | dir == DownMovement = w{ player = p {playerLocation = (x,y - 10)}}
+    | dir == UpMovement = w{ player = p {playerLocation = (x,y + 10)}}
+    | dir == UpleftMovement = w{ player = p {playerLocation = (x - 5.5 , y + 5.5)}}
+    | dir == UprightMovement = w{ player = p {playerLocation = (x + 5.5, y + 5.5)}}
     | dir == NoMovement = w
 
 -- Keep plane on screen
@@ -101,7 +105,7 @@ planeOnScreen w@(World {player = p@(Player {playerLocation = (x,y)})})
     | y <= (-190) = w{ player = p {playerLocation = (x,-190)}}
     | y >= 170 = w{ player = p {playerLocation = (x,170)}}
     | otherwise = w 
-
+-- pauzeer de game
 isPaused :: World -> Bool
 isPaused w@(World {pause = paused})
     | paused == Playing = False
@@ -111,75 +115,76 @@ isPaused w@(World {pause = paused})
 --hiermee kunnen we de moeilijkheid gaan controleren
 --kunnen meer ettapes toevoegen
 eos :: World -> World
-eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w
-                                                | s >= 20 && s <  40 = timeToSpawnEnemy False $ timeToSpawnAsteroid w
-                                                | s >= 40 = timeToSpawnEnemy True $ timeToSpawnAsteroid w
+eos w@(World {asteroidTimer = time, score = s}) | s < 20 = timeToSpawnAsteroid w -- alleen asteroids
+                                                | s >= 20 && s <  40 = timeToSpawnEnemy False $ timeToSpawnAsteroid w --asteroids en random enemies
+                                                | s >= 40 = timeToSpawnEnemy True $ timeToSpawnAsteroid w -- asteroids en attack enemies (spawnen boven player)
 
-
+-- spawn enemie als de score boven de 40 is wordt de bool true en worden de enemies moeilijker
 timeToSpawnEnemy :: Bool -> World -> World
 timeToSpawnEnemy f w@(World {enemyTimer = time}) 
     | f==False && time < 1 = spawnRandomEnemy w{ enemyTimer = 70}
     | time < 1 = spawnAttackEnemy w{ enemyTimer = 70}
     | otherwise = w {enemyTimer = time - 1}     
 
---enemies (experimental)
+--update alle enemies
 updateEnemies :: World -> World
 updateEnemies w@(World {enemies = listOfEnemies}) = w{enemies = map updateEnemy listOfEnemies}
 
+-- update een enkele enemie
 updateEnemy :: Enemy -> Enemy
 updateEnemy e@(Enemy{ enemyLocation = (x,y), enemySpeed = s}) = e{enemyLocation = (x,y+s)}
-
+-- spawn een random enemie
 spawnRandomEnemy :: World -> World
 spawnRandomEnemy w@(World {enemies = listOfEnemies,  asteroidsSpawnGenerator = g}) = w{enemies = listOfEnemies ++ [createEnemy (getFirstNumber(generateTreeNumbers g)) ], asteroidsSpawnGenerator = getSeed(generateTreeNumbers g) }
-
+-- spawn een attack enemie (spanwned boven de player)
 spawnAttackEnemy :: World -> World
 spawnAttackEnemy w@(World {enemies = listOfEnemies, player = p@(Player {playerLocation = (x,y)})}) = w{enemies = listOfEnemies ++ [createEnemy x ]}
 
-
+-- creer een enemie
 createEnemy :: Float-> Enemy
 createEnemy x = Enemy (x,200) NotDestroyed (-3)
 
 -- Update all asteroids    
 updateAsteroids :: World -> World
 updateAsteroids w@(World {asteroids = listOfAsteroids}) = w{asteroids = map updateAsteroid listOfAsteroids}
-
+-- update een enkele asteroid
 updateAsteroid :: Asteroid -> Asteroid
 updateAsteroid a@(Asteroid{ asteroidLocation = al, asteroidHeading = ah}) = a{ asteroidLocation = translatePointVector al ah}
 
+-- spawn een asteroid
 spawnAsteroid :: World -> World
 spawnAsteroid w@(World {asteroids = listOfAsteroids, asteroidsSpawnGenerator = g}) = w{asteroids = listOfAsteroids ++ [createAsteroid (getFirstNumber(generateTreeNumbers g)) (getSecondNumber(generateTreeNumbers g)) (getVectorAsteroid(generateVectorAsteroid g))]
 , asteroidsSpawnGenerator = getSeed(generateTreeNumbers g)}
 
+-- creeer een asteroid
 createAsteroid :: Float -> Float -> Vector -> Asteroid
 createAsteroid x asteroidSize = Asteroid (x, 200) asteroidSize NotDestroyed
-
+-- zorg dat de asteroids op het scherm blijven
 keepAsteroidsOnScreen :: World -> World
 keepAsteroidsOnScreen w@(World {asteroids = listOfAsteroids}) = w{asteroids = map onScreen listOfAsteroids}
     where 
         onScreen a@(Asteroid {asteroidLocation = (ax,_),asteroidHeading = (hx,hy)}) | ax < -240 = a{asteroidHeading = (hx * (-1),hy)}
                                                                                     | ax > 240 = a{asteroidHeading = (hx * (-1),hy)}
                                                                                     | otherwise = a
--- Update all asteroids    
+-- Update all rocks    
 moveRocks :: World -> World
 moveRocks w@(World {rocks = listOfRocks}) = w{rocks = map updateRock (checkRockDestryed listOfRocks)}
-
+-- update een enkel rock als de liveTime van een rock lager dan 0 is wordt die destroyed
 updateRock :: Rock -> Rock
 updateRock r@(Rock{ rockLocation = rl, rockHeading = rh, liveTime = lt, rockStatus = rs}) 
     |  lt < 0 = r{ rockStatus = Destroyed}
     | otherwise = r{ rockLocation = translatePointVector rl rh, liveTime = lt -1}
-
+-- zorg dat destroyed rocks verwijderd worden
 checkRockDestryed :: [Rock] -> [Rock]
 checkRockDestryed rockList = [r | r@(Rock {rockStatus = NotDestroyed}) <- rockList]
-
--- Animation / explosion
-
+-- spawn een cluster van rocks voor animeren explosie
 spawnCluster :: Point -> StdGen -> [Rock]
 spawnCluster p g = [createRock p (getFirstVector (generaterVectorCluster g))] ++ 
                     [createRock p (getSecondVector (generaterVectorCluster g))] ++ 
                     [createRock p (getThirdVector (generaterVectorCluster g))] ++ 
                     [createRock p (getFourthVector (generaterVectorCluster g))] ++
                     [createRock p (getFifthVector (generaterVectorCluster g))]
-
+-- maak een enkel rock
 createRock :: Point -> Vector -> Rock
 createRock p v = Rock p v 4 NotDestroyed
 
@@ -232,7 +237,7 @@ generaterVectorCluster g = let (x1, g1) = randomR (-4, 4) g
                             in (((x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5)),g10)
 
 getFirstVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
-getFirstVector (((x,y),_,_,_,_), _) = (x,y)
+getFirstVector ((v,_,_,_,_), _) = v
 getSecondVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
 getSecondVector ((_,v,_,_,_), _) = v
 getThirdVector :: RandomGen g => ((Vector,Vector,Vector,Vector,Vector), g) -> Vector
