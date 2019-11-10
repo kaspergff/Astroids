@@ -52,8 +52,8 @@ module View where
     drawbullet Bullet { bulletLocation = (x,y), bulletStatus = s} = translate x y bullet
     -- hoe ziet een bullet eruit                                                      
     bullet :: Picture
-    bullet = color blue $ ThickCircle 1 2
-    -- Tekent alle asteroids
+    bullet = color red $ ThickCircle 1 2
+
     drawAsteroids :: World -> [Picture]
     drawAsteroids World {asteroids = listOfAsteroids} = map drawAsteroid listOfAsteroids
     -- tekent één asterioid
