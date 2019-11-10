@@ -29,25 +29,11 @@ input e gstate = return (inputKey e gstate)
 -- Key input
 
 inputKey :: Event -> GameState -> GameState  
---laat staan tot nader order
-{-
-inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _)  gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpleftMovement}}}
-inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _)  gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownleftMovement}}}
-inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UprightMovement}}}
-inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownrightMovement}}}
--}
-{-
+
 inputKey (EventKey (SpecialKey (KeyLeft)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = LeftMovement}}}
 inputKey (EventKey (SpecialKey (KeyRight)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = RightMovement}}}
 inputKey (EventKey (SpecialKey (KeyUp)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = UpMovement}}}
 inputKey (EventKey (SpecialKey (KeyDown)) Down _ _) gstate@(GameState _ w@(World{player = p}) _) = gstate {world = w {player = p {movement = DownMovement}}}    
--}
-inputKey (EventKey (Char ('w')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = UpMovement}}}
-inputKey (EventKey (Char ('a')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = LeftMovement}}}
-inputKey (EventKey (Char ('s')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = DownMovement}}}
-inputKey (EventKey (Char ('d')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = RightMovement}}}
-inputKey (EventKey (Char ('e')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = UprightMovement}}}
-inputKey (EventKey (Char ('q')) Down _ _) gstate@(GameState _ w@(World{player = p})  _) = gstate {world = w {player = p {movement = UpleftMovement}}}
 
 --bullet
 inputKey (EventKey (SpecialKey (KeySpace)) _ _ _ ) gstate@(GameState _ w@(World {bullets = l})  _) = gstate {world = (spawnBullet w)}
@@ -89,8 +75,6 @@ updatePlane w@(World {player = p@(Player {playerLocation = (x,y), movement = dir
     | dir == LeftMovement = w{ player = p {playerLocation = (x - 10,y), movement = LeftMovement}}
     | dir == DownMovement = w{ player = p {playerLocation = (x,y - 10), movement = DownMovement}}
     | dir == UpMovement = w{ player = p {playerLocation = (x,y + 10), movement = UpMovement}}
-    | dir == UpleftMovement = w{ player = p {playerLocation = (x - 5.5 , y + 5.5), movement = UpleftMovement}}
-    | dir == UprightMovement = w{ player = p {playerLocation = (x + 5.5, y + 5.5), movement = UprightMovement}}
     | dir == NoMovement = w
 
 -- Keep plane on screen

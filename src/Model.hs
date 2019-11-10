@@ -77,7 +77,7 @@ module Model where
     --data Vector = Vector Float Float
 
     -- movement player
-    data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement | UpleftMovement | UprightMovement | DownleftMovement| DownrightMovement deriving (Eq)
+    data Movement = NoMovement | LeftMovement | RightMovement | DownMovement | UpMovement  deriving (Eq)
 
     -- pause the game
     data PauseorPlay = Paused | Playing deriving (Eq)
